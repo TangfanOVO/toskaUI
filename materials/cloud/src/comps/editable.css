@@ -1,0 +1,6 @@
+.dedit canvas{filter:url(#solid)}
+.ewrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.dedit{position:relative;display:flex;justify-content:center;width:180px;height:40px;align-items:center}
+.dedit canvas{position:absolute;left:-30px;top:-50px;width:calc(100% + 60px);height:calc(100% + 80px);pointer-events:none}
+.eprev{position:relative;padding:4px 8px;font-size:19px;font-weight:650;cursor:text;border-radius:6px}
+.einput{position:relative;width:180px;padding:4px 8px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:19px;font-weight:650;text-align:center;outline:none}

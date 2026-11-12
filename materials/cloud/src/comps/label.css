@@ -1,0 +1,5 @@
+.dlabel canvas{filter:url(#solid)}
+.dlabel{position:relative;display:flex;align-items:center;gap:12px}
+.dlabel canvas{position:absolute;left:-30px;top:-30px;width:calc(100% + 60px);height:calc(100% + 60px);pointer-events:none}
+.dlabel .lbl,.dlabel .lin{position:relative}
+.dlabel .lin{width:160px}

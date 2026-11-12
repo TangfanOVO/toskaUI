@@ -1,0 +1,10 @@
+.tipx{position:relative;display:grid;grid-template:repeat(3,36px)/repeat(3,36px);gap:14px;margin:56px 0}
+.tipx canvas{position:absolute;left:-150px;top:-90px;width:calc(100% + 300px);height:calc(100% + 180px);pointer-events:none;z-index:4;filter:url(#solid)}
+.tipx .round{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:16px;line-height:1;cursor:pointer}
+.tipx [data-side="top"]{grid-area:1/2}
+.tipx [data-side="left"]{grid-area:2/1}
+.tipx [data-side="right"]{grid-area:2/3}
+.tipx [data-side="bottom"]{grid-area:3/2}
+.tipx .tip-pop{position:absolute;left:0;top:0;width:112px;height:32px;z-index:5;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--card-ink);pointer-events:none;white-space:nowrap}
+.tipx .tip-pop[hidden]{display:none}
+

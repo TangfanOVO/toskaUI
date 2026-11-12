@@ -1,0 +1,9 @@
+.dtree canvas{filter:url(#solid)}
+.dtree{position:relative;width:min(240px,100%);text-align:left}
+.dtree canvas{position:absolute;left:-20px;top:-30px;width:calc(100% + 40px);height:calc(100% + 60px);pointer-events:none}
+.trows{position:relative;margin:0;padding:0;list-style:none}
+.trows li{position:relative;display:flex;align-items:center;gap:6px;height:30px;padding-right:8px;border-radius:8px;color:#fff;mix-blend-mode:difference;font-size:14px;cursor:pointer;user-select:none}
+.trows li:focus{outline:none}
+.trows li:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+.trows .tw{display:inline-block;width:14px;text-align:center;font-size:11px;transition:transform .18s}
+.trows li[aria-expanded="true"] .tw{transform:rotate(90deg)}

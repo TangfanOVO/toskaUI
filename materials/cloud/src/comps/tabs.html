@@ -1,0 +1,11 @@
+<div class="dtabs" id="tabs">
+  <canvas aria-hidden="true"></canvas>
+  <div class="tlist" role="tablist" aria-label="账号设置">
+    <button type="button" role="tab" id="tb1" aria-selected="true" aria-controls="tp1" tabindex="0">账号</button>
+    <button type="button" role="tab" id="tb2" aria-selected="false" aria-controls="tp2" tabindex="-1">密码</button>
+    <button type="button" role="tab" id="tb3" aria-selected="false" aria-controls="tp3" tabindex="-1">通知</button>
+  </div>
+  <div class="tpanel" role="tabpanel" id="tp1" aria-labelledby="tb1" tabindex="0"><p>修改你的账号信息，改好了点保存。</p></div>
+  <div class="tpanel" role="tabpanel" id="tp2" aria-labelledby="tb2" tabindex="0" hidden><p>修改密码。保存以后需要重新登录。</p></div>
+  <div class="tpanel" role="tabpanel" id="tp3" aria-labelledby="tb3" tabindex="0" hidden><p>选择你想收到哪些提醒。</p></div>
+</div>

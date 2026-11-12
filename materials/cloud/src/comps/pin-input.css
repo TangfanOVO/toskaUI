@@ -1,0 +1,8 @@
+.dpin canvas{filter:url(#solid)}
+/* 验证码输入 */
+.dpin{position:relative;display:flex;gap:8px}
+.dpin canvas{position:absolute;left:-40px;top:-64px;width:calc(100% + 80px);height:calc(100% + 104px);pointer-events:none}
+.pcell{position:relative;width:40px;height:46px;border:1.5px solid var(--muted);border-radius:10px}
+.pcell[data-f="1"]{border-color:transparent}
+.pcell:focus-within{outline:none;border-color:transparent}
+.pcell input{position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;background:transparent;color:#fff;mix-blend-mode:difference;caret-color:#fff;text-align:center;font:inherit;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;outline:none}

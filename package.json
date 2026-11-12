@@ -1,0 +1,14 @@
+{
+  "name": "toskaui",
+  "license": "MIT",
+  "private": true,
+  "description": "toskaUI：一套会动的 UI 组件，第一种材质是“烟云”（实心云）",
+  "scripts": {
+    "build": "python3 tools/build.py",
+    "check": "node tools/check.js",
+    "preview": "python3 tools/preview/grid.py && node tools/preview/record.js && bash tools/preview/make-gifs.sh"
+  },
+  "devDependencies": {
+    "playwright": "1.55.1"
+  }
+}

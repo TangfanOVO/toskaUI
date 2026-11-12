@@ -1,0 +1,5 @@
+.dsw canvas{filter:url(#solid)}
+.swrow{display:flex;align-items:center;gap:12px;font-size:14.5px}
+.dsw{position:relative;width:56px;height:32px;border:0;padding:0;background:var(--track);border-radius:999px;cursor:pointer;touch-action:pan-y;-webkit-tap-highlight-color:transparent}
+.dsw canvas{position:absolute;left:-40px;top:-70px;width:136px;height:142px;pointer-events:none}
+.swrow{position:relative}

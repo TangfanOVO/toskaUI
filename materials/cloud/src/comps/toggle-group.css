@@ -1,0 +1,6 @@
+.dtg canvas{filter:url(#solid)}
+/* 切换组：字自动反色，压在实心底上变色 */
+.dtg{position:relative;display:inline-flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px}
+.dtg canvas{position:absolute;left:-30px;top:-50px;width:calc(100% + 60px);height:calc(100% + 80px);pointer-events:none}
+.dtg button{position:relative;width:36px;height:36px;border:0;padding:0;background:transparent;color:#fff;mix-blend-mode:difference;font:inherit;font-size:16px;border-radius:9px;cursor:pointer}
+.dtg button:focus-visible{outline-color:#fff}

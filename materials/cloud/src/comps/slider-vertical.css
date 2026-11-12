@@ -1,0 +1,8 @@
+.vsrow{flex-direction:column;gap:12px}
+.dvslider{position:relative;width:24px;height:180px;cursor:pointer;touch-action:none;border-radius:12px}
+.dvslider::before{content:"";position:absolute;top:0;bottom:0;left:10px;width:4px;border-radius:2px;background:var(--track)}
+.dvslider canvas{position:absolute;left:-40px;top:-40px;width:104px;height:260px;pointer-events:none;filter:url(#solid)}
+.dvslider:focus{outline:none}
+.dvslider:focus-visible::after{content:"";position:absolute;inset:-6px;border-radius:14px;border:2px solid var(--ink)}
+.vsrow .sval{font-size:13.5px;font-variant-numeric:tabular-nums;color:var(--muted)}
+

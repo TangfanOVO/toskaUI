@@ -1,0 +1,13 @@
+.dtabs canvas{filter:url(#solid)}
+/* 标签页 */
+.dtabs{position:relative;width:min(300px,100%);text-align:left}
+.dtabs canvas{position:absolute;z-index:2;left:-30px;top:-40px;width:calc(100% + 60px);height:110px;pointer-events:none}
+.tlist{position:relative;display:flex;border-bottom:1px solid var(--line)}
+.tlist button{position:relative;z-index:3;flex:1;height:40px;border:0;padding:0;background:transparent;color:var(--muted);font:inherit;font-size:14.5px;cursor:pointer;text-shadow:0 0 2px var(--bg),0 0 5px var(--bg)}
+.tlist button[aria-selected="true"]{color:var(--ink);font-weight:600}
+.tpanel{position:relative;z-index:3;padding:14px 4px 4px;min-height:62px;font-size:14px;line-height:1.55;color:var(--muted)}
+.tpanel[hidden]{display:none}
+.tpanel p{margin:0}
+.tpanel:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px}
+
+/* 画布放在分隔线上面（z-index 2），标签字和面板的字再放到画布上面（z-index 3），指示线就不会被那条细线从中间划开 */

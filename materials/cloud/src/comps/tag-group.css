@@ -1,0 +1,9 @@
+.dtagg canvas{filter:url(#solid)}
+.dtagg{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:min(300px,100%)}
+.dtagg canvas{position:absolute;left:-40px;top:-60px;width:calc(100% + 80px);height:calc(100% + 100px);pointer-events:none}
+.tg{position:relative;display:inline-flex;align-items:center;height:30px;padding:0 3px 0 4px;border:1px solid var(--line);border-radius:999px}
+.tg[data-on="1"]{border-color:transparent}
+.tgb,.tgx{position:relative;border:0;background:transparent;color:#fff;mix-blend-mode:difference;font:inherit;cursor:pointer}
+.tgb{height:26px;padding:0 4px 0 8px;font-size:13.5px;border-radius:999px}
+.tgx{width:22px;height:22px;padding:0;font-size:15px;line-height:1;border-radius:50%}
+.tgb:focus-visible,.tgx:focus-visible{outline:2px solid #fff;outline-offset:1px}

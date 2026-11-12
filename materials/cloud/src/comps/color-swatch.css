@@ -1,0 +1,8 @@
+.dswatch{position:relative}
+.dswatch canvas{position:absolute;left:50%;top:50%;width:380px;height:220px;margin:-130px 0 0 -190px;pointer-events:none;filter:url(#solid)}
+.swrow{position:relative;display:flex;gap:18px}
+.sw{margin:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.swb{display:block;width:52px;height:52px;border-radius:14px}
+.sw figcaption{display:flex;flex-direction:column;gap:1px;font-size:12.5px;color:var(--ink);line-height:1.35}
+.sw code{font:inherit;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+

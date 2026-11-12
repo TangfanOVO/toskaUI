@@ -1,0 +1,10 @@
+.dswp{position:relative;flex-direction:column;gap:22px}
+.dswp canvas{position:absolute;left:50%;top:50%;width:460px;height:250px;margin:-140px 0 0 -230px;pointer-events:none;filter:url(#solid)}
+.swpl{position:relative;display:grid;grid-template-columns:repeat(8,minmax(0,34px));gap:clamp(5px,2vw,10px);justify-content:center;width:min(342px,100%)}   /* 八个一排：窄的时候色块一起变小，不换行 */
+.swpl [role=option]{width:100%;aspect-ratio:1;border-radius:10px;cursor:pointer}
+.swpl [role=option]:focus{outline:none}
+.swpl [role=option]:focus-visible{outline:2px solid var(--ink);outline-offset:6px}
+.swpprev{position:relative;display:flex;align-items:center;gap:12px}
+.swppill{display:inline-flex;align-items:center;height:36px;padding:0 18px;border-radius:18px;font-size:14px;font-weight:600;color:#fff}
+.swpname{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:8.5em;text-align:left}
+

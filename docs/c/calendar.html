@@ -1,0 +1,1813 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>日历 · toskaUI</title>
+<!-- toskaUI · 烟云 · 日历（对应 Reka UI 的 Calendar）
+     一个文件就能跑：存成 .html，用浏览器打开。颜色在 :root 的几个变量里，手感在脚本里的 F（速度、弹性、扭曲、烟雾）。
+     灵感来自 goopUI（Tim McMasters），结构、尺寸和示例文字参考 Reka UI。 -->
+<script>try{var m=location.hash.match(/theme-(dark|light|white)/);if(m)document.documentElement.setAttribute("data-theme",m[1]);}catch(e){}</script>
+<style>
+:root{
+  --bg:#f8f7f4; --ink:#1a1918; --muted:#6f6b64; --dot:#dddbd5; --line:#e7e5e0;
+  --body:#1a1918; --body-ink:#f8f7f4; --body-muted:#a8a59f; --track:#e1dfda;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]):not([data-theme="white"]){
+    --bg:#131312; --ink:#efeee9; --muted:#8f8c86; --dot:#282725; --line:#2a2927;
+    --body:#efeee9; --body-ink:#131312; --body-muted:#5f5c57; --track:#2c2b28;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131312; --ink:#efeee9; --muted:#8f8c86; --dot:#282725; --line:#2a2927;
+  --body:#efeee9; --body-ink:#131312; --body-muted:#5f5c57; --track:#2c2b28;
+  color-scheme:dark;
+}
+/* 灰底白云：阴天的天色，白云浮在上面。只换这几个颜色，所有组件跟着变 */
+:root[data-theme="white"]{
+  --bg:#c4c9cf; --ink:#1b1e22; --muted:#4e5761; --dot:#b6bcc3; --line:#b2b8bf;
+  --body:#ffffff; --body-ink:#1b1e22; --body-muted:#6b737c; --track:#b4bac1;
+  color-scheme:light;
+}
+/* 弹层的两种样子：实心卡（卡片是组件的颜色，选中是底色）／浅色卡（卡片是底色，选中的那块是实心、流过去） */
+:root{--card:var(--body);--card-ink:var(--body-ink);--card-muted:var(--body-muted);--hl:var(--bg);--hl-ink:var(--ink)}
+:root[data-card="light"]{--card:var(--bg);--card-ink:var(--ink);--card-muted:var(--muted);--hl:var(--body);--hl-ink:var(--body-ink)}
+*{box-sizing:border-box}
+html,body{margin:0}
+/* 演示用的假鼠标：按下时缩一下，底下荡开一圈 */
+.demo-cursor{position:fixed;left:-3px;top:-2px;z-index:9999;width:24px;height:24px;pointer-events:none;opacity:0;transition:opacity .25s;filter:drop-shadow(0 1px 2px rgb(0 0 0 / .25))}
+.demo-cursor.on{opacity:1}
+.demo-run :focus-visible{outline:none!important}
+.demo-run .chsl:focus-visible::after{display:none}
+.demo-cursor svg{display:block;transform-origin:5px 3px;transition:transform .12s}
+.demo-cursor.down svg{transform:scale(.84)}
+.demo-cursor i{position:absolute;left:-9px;top:-10px;width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);opacity:0;transform:scale(.3)}
+.demo-cursor.down i{opacity:.45;transform:scale(1);transition:transform .25s,opacity .25s}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:28px 16px 56px}
+h1{font-size:22px;line-height:1.3;margin:0 0 4px;font-weight:650}
+.lead{margin:0 0 18px;color:var(--muted)}
+.themes{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 12px}
+.tlab{font-size:13px;color:var(--muted);margin-right:4px}
+.themes button{font:inherit;font-size:13.5px;padding:5px 13px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.themes button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:18px;
+  background-color:var(--bg);background-image:radial-gradient(var(--dot) 1px,transparent 1.3px);background-size:22px 22px;
+  display:grid;grid-template-columns:1fr 1fr}
+@media (max-width:720px){.stage{grid-template-columns:1fr}}
+.demo{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;gap:14px;padding:30px 16px 28px;text-align:center}
+.cap{font-size:12.5px;letter-spacing:.04em;color:var(--muted)}
+.slot{min-height:76px;display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap}
+.tip{margin:0;font-size:12.5px;color:var(--muted);max-width:260px;line-height:1.55}
+.demo.pop{min-height:290px;justify-content:flex-start}
+.demo.wide{grid-column:1/-1}
+.stage input{-webkit-user-select:text;user-select:text}
+.themes,.presets{-webkit-tap-highlight-color:transparent}
+.grp{grid-column:1/-1;margin:0;padding:22px 20px 0;font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--muted);border-top:1px solid var(--line)}
+.grp:first-child{border-top:0}
+.col{flex-direction:column;align-items:flex-start;gap:12px}
+.ddsep{height:1px;margin:4px 6px;background:var(--card-muted);opacity:.5}
+.ghost:disabled,.ghost[aria-disabled="true"]{opacity:.4;cursor:default}
+.sval{font-variant-numeric:tabular-nums;font-size:14px;min-width:2.2em;text-align:right}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ghost{height:36px;padding:0 16px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.pcol{display:flex;flex-direction:column;align-items:center;gap:14px}
+.plabel{font-size:13.5px;font-variant-numeric:tabular-nums}
+.trigger{height:40px;padding:0 20px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+/* 卡片本身是一团云，焦点落在卡片上时不画方框；里面的选项照常有焦点圈 */
+/* 烟可能飘过的字：放在烟上面，再描一圈底色，盖住了也看得清 */
+.cap,.tip,.sval,.plabel,.lt{position:relative;z-index:3;text-shadow:0 0 2px var(--bg),0 0 5px var(--bg),0 0 9px var(--bg)}
+.controls{margin-top:16px;padding:16px 18px;border:1px solid var(--line);border-radius:18px;display:grid;grid-template-columns:1fr 1fr;gap:8px 28px}
+@media (max-width:720px){.controls{grid-template-columns:1fr}}
+.controls h2{grid-column:1/-1;font-size:14px;margin:0 0 2px;font-weight:600}
+.presets{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.presets button{font:inherit;font-size:14px;padding:6px 15px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.presets button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.row label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px}
+.row output{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+.row input{width:100%;accent-color:var(--ink);margin:6px 0 2px}
+.row small{display:block;color:var(--muted);font-size:12.5px;line-height:1.45}
+.notes{margin:22px 2px 0;padding:0;list-style:none;color:var(--muted);font-size:13.5px}
+.notes li{margin:0 0 6px;padding-left:14px;position:relative}
+.notes li::before{content:"";position:absolute;left:0;top:.72em;width:5px;height:5px;border-radius:50%;background:var(--muted);opacity:.5}
+/* 表单公用：标签文字、输入框、提示和错误 */
+.lbl{font-size:13.5px;font-weight:600;color:var(--ink)}
+.lin{position:relative;height:36px;padding:0 11px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;min-width:0;will-change:transform}
+.lin{background-clip:padding-box}
+.lin:focus{outline:none;border-color:transparent}   /* 焦点圈画在画布上：一圈实心线沿着框边流一圈 */
+.lin::placeholder{color:var(--muted);opacity:.7}
+.fmsg{position:relative;z-index:3;min-height:20px;font-size:12.5px;line-height:1.5;color:var(--muted);padding-left:14px}
+.ferr{color:var(--ink);font-weight:500}
+/* 弹出列表公用（选择框、组合框、自动补全） */
+.selpop{position:absolute;left:0;top:calc(100% + 6px);padding:4px;z-index:5;text-align:left;transform-origin:50% 50%;outline:none}
+.selpop [role=option],.selpop .none{display:flex;align-items:center;justify-content:space-between;height:32px;padding:0 10px;border-radius:8px;color:var(--card-ink);font-size:14px;cursor:pointer;user-select:none}
+.selpop .none{color:var(--card-muted);cursor:default}
+.selpop [role=option][data-hl="1"]{color:var(--hl-ink)}
+.selpop [role=option] i{font-style:normal;font-size:12px;visibility:hidden}
+.selpop [role=option][aria-selected="true"] i{visibility:visible}
+.selpop:focus-visible{outline:none}
+/* 日期公用：分段输入、月历、月份／年份格子 */
+.dseg2{position:relative;display:inline-flex;align-items:center;gap:1px;height:40px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:transparent;font-variant-numeric:tabular-nums}
+.dseg2:focus-within{border-color:transparent}
+.dseg2 [role=spinbutton]{position:relative;z-index:5;display:inline-block;min-width:1.4em;padding:3px 3px;border-radius:6px;text-align:center;color:#fff;mix-blend-mode:difference;font-size:14.5px;outline:none;cursor:text;transform-origin:50% 60%;user-select:none;-webkit-user-select:none}
+.dseg2 [role=spinbutton][data-empty]{opacity:.55}
+.dseg2 .sl{position:relative;z-index:5;color:var(--muted);font-size:13px;padding:0 1px}
+.dseg2 .dash{position:relative;z-index:5;margin:0 6px;color:var(--muted)}
+.mg{width:270px}
+.mghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.mgtitle{margin:0;font-size:14px;font-weight:600}
+.mgnav{position:relative;z-index:5;width:30px;height:30px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;line-height:1;cursor:pointer}
+.mggrid{width:100%;table-layout:fixed;border-collapse:collapse}
+.mggrid th{position:relative;z-index:3;height:24px;font-size:11.5px;font-weight:400;color:var(--muted)}
+.mggrid td{padding:2px 0;height:36px;text-align:center}
+.mggrid td button{position:relative;z-index:5;width:32px;max-width:100%;height:32px;border:0;padding:0;border-radius:50%;background:transparent;color:#fff;mix-blend-mode:difference;font:inherit;font-size:13px;font-variant-numeric:tabular-nums;cursor:pointer}
+.mggrid td button[data-today]{font-weight:700}
+.mggrid td button:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.tg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:250px}
+.tg3 button{position:relative;z-index:5;height:40px;border:0;border-radius:10px;background:transparent;color:#fff;mix-blend-mode:difference;font:inherit;font-size:14px;cursor:pointer;font-variant-numeric:tabular-nums}
+.tg3 button:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.oncard .mgtitle{color:var(--card-ink)}
+.oncard .mgnav{background:transparent;border-color:var(--card-muted);color:var(--card-ink)}
+.oncard .mggrid th{color:var(--card-muted)}
+.oncard .mggrid td button{color:var(--card-ink);mix-blend-mode:normal}
+.oncard .mggrid td button[data-on]{color:var(--hl-ink)}
+.oncard .mggrid td button:focus-visible{outline-color:var(--card-ink)}
+/* ================= 颜色公用：通道滑块（粗渐变轨道）、读数 ================= */
+.chsl{position:relative;flex:none;width:var(--w,200px);height:24px;cursor:pointer;touch-action:none;border-radius:12px}
+.chsl::before{content:"";position:absolute;left:0;right:0;top:5px;height:14px;border-radius:7px;background:var(--grad,var(--track));box-shadow:inset 0 0 0 1px rgb(0 0 0 / .07)}
+.chsl canvas{position:absolute;left:-30px;top:-60px;width:calc(100% + 60px);height:114px;pointer-events:none;filter:url(#solid)}
+.chsl:focus{outline:none}
+.chsl:focus-visible::after{content:"";position:absolute;inset:-5px;border-radius:14px;border:2px solid var(--ink)}
+.chrow{display:flex;align-items:center;gap:12px}
+.chlab{flex:none;width:3.2em;font-size:12.5px;color:var(--muted);text-align:left}
+.chval{flex:none;width:3.2em;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.cread{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.cread i{width:18px;height:18px;border-radius:6px;background:var(--c,var(--body));box-shadow:inset 0 0 0 1px rgb(0 0 0 / .08)}
+.cread code{font:inherit;font-variant-numeric:tabular-nums;color:var(--ink);letter-spacing:.03em}
+
+.dcal canvas{filter:url(#solid)}
+/* 日历 */
+.dcal{position:relative;width:min(280px,100%)}
+.dcal canvas{position:absolute;left:-30px;top:-44px;width:calc(100% + 60px);height:calc(100% + 70px);pointer-events:none}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.caltitle{margin:0;font-size:14.5px;font-weight:600}
+.calnav{position:relative;width:32px;height:32px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit;font-size:16px;line-height:1;cursor:pointer}
+.calgrid{width:100%;table-layout:fixed;border-collapse:collapse;margin:0 auto}
+.calgrid th{position:relative;z-index:3;height:26px;font-size:12px;font-weight:400;color:var(--muted);text-shadow:0 0 2px var(--bg),0 0 5px var(--bg)}
+.calgrid td{padding:2px 0;height:38px;text-align:center}
+.calgrid td button{position:relative;width:34px;max-width:100%;height:34px;border:0;padding:0;border-radius:50%;background:transparent;color:#fff;mix-blend-mode:difference;font:inherit;font-size:13.5px;font-variant-numeric:tabular-nums;cursor:pointer}
+.calgrid td button[data-today="1"]{font-weight:700}
+.calgrid td button:focus-visible{outline:2px solid #fff;outline-offset:1px}
+/* 弹出来的东西永远压在后面的组件上面（后面组件里的字有的带了层级） */
+.selpop,.dppop,.mbmenu,.nvpanel,.hovcard,.ddmenu,.ctxmenu,.panel,.tip-pop{z-index:20}
+.dsel canvas,.dcombo canvas,.dpick canvas,.dmbar canvas,.dnav canvas,.hovfx,.ddfx,.ctxfx,.popfx,.tipwrap canvas{z-index:19}
+/* 这些组件的画布被抬高了，它们自己的字和按钮要再高一层，不然会被实心块盖住 */
+.mbar button,.nvtrig,.seltrig,.dcombo .cbfield .lin,.dcombo .cbtog,.acghost,.hovlink,.dpick .dseg2 [role=spinbutton],.dpick .dseg2 .sl,.dpick .dseg2 .dash,.dpbtn{z-index:21}
+
+/* 单独一页：组件放在正中间，不带说明 */
+.wrap.solo{max-width:none;min-height:100vh;padding:0;display:flex}
+.stage.solo{flex:1;display:flex;align-items:center;justify-content:center;min-height:100vh;border:0;border-radius:0}
+.stage.solo .demo{width:100%;max-width:640px;padding:56px 16px}
+.stage.solo .demo.pop{min-height:100vh;justify-content:flex-start;padding-top:64px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="solid" color-interpolation-filters="sRGB">
+    <feComponentTransfer><feFuncA type="linear" slope="22" intercept="-10"/></feComponentTransfer>
+  </filter>
+</svg>
+<div class="wrap solo"><section class="stage solo" id="stage">
+  <div class="demo">
+    <div class="dcal" id="cal">
+      <canvas aria-hidden="true"></canvas>
+      <div class="calhead">
+        <button type="button" class="calnav" data-d="-1" aria-label="上个月">‹</button>
+        <h3 class="caltitle lt" id="calTitle" aria-live="polite"></h3>
+        <button type="button" class="calnav" data-d="1" aria-label="下个月">›</button>
+      </div>
+      <table class="calgrid" role="grid" aria-labelledby="calTitle">
+        <thead><tr><th scope="col" abbr="星期日">日</th><th scope="col" abbr="星期一">一</th><th scope="col" abbr="星期二">二</th><th scope="col" abbr="星期三">三</th><th scope="col" abbr="星期四">四</th><th scope="col" abbr="星期五">五</th><th scope="col" abbr="星期六">六</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section></div>
+
+<script>
+window.__DEMO = [["click", "#cal tbody button|9"], ["wait", 900], ["click", "#cal tbody button|24"], ["wait", 900], ["click", "#cal tbody button|5"], ["wait", 900], ["out"]];
+(() => {
+'use strict';
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const J = () => Math.random() - .5;
+const $ = s => document.querySelector(s);
+const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+const darkMQ = matchMedia('(prefers-color-scheme: dark)');
+let reduced = reduceMQ.matches;
+
+/* ---------- 手感 ---------- */
+const F = { speed: .5, bounce: .5, deform: .55, smoke: .6 };
+const PRESETS = {
+  base:  { speed: .5,  bounce: .5,  deform: .55, smoke: .6 },
+  crisp: { speed: .8,  bounce: .25, deform: .3,  smoke: .35 },
+  jelly: { speed: .45, bounce: .85, deform: .95, smoke: .5 },
+  smoky: { speed: .45, bounce: .45, deform: .55, smoke: 1 },
+};
+const resp = () => .5 - F.speed * .36;
+const zeta = () => reduced ? 1 : 1 - F.bounce * .8;
+const ptResp = () => .13 + (1 - F.speed) * .14;
+const ptZeta = () => reduced ? 1 : .16 + (1 - F.bounce) * .5;
+const deformK = () => reduced ? 0 : F.deform;
+const smokeK = () => reduced ? 0 : F.smoke;
+// 烟雾不只管冒出去的烟，也管组件"里面"：化开的雾团有多大、散多开，横条上的水珠能鼓多大，冒出去的烟有多浓
+const fogSize = () => .7 + .6 * F.smoke;
+const fogSpread = () => .55 + .75 * F.smoke;
+const smokeDens = () => .8 + .34 * F.smoke;
+function kc(r, z) { const w = TAU / r; return [w * w, 2 * z * w]; }
+const spring = x => ({ x, v: 0, t: x });
+function stepS(s, h, r, z) {
+  const [k, c] = kc(r, z); s.v += (-k * (s.x - s.t) - c * s.v) * h; s.x += s.v * h;
+  if (!Number.isFinite(s.x) || !Number.isFinite(s.v)) { s.x = Number.isFinite(s.t) ? s.t : 0; s.v = 0; }   // 万一算坏了，直接回到目标
+}
+const rb = (d, dim) => (1 - 1 / (d * 0.55 / dim + 1)) * dim;
+function rubber(v, lo, hi, dim) { if (v < lo) return lo - rb(lo - v, dim); if (v > hi) return hi + rb(v - hi, dim); return v; }
+function pushSample(a, x) { const t = performance.now(); a.push({ t, x }); while (a.length > 2 && t - a[0].t > 100) a.shift(); }
+function vel(a, now) {
+  if (a.length < 2) return 0;
+  const p = a[0], q = a[a.length - 1];
+  if (now !== undefined && now - q.t > 60) return 0;
+  const dt = (q.t - p.t) / 1000;
+  return dt < .008 ? 0 : clamp((q.x - p.x) / dt, -3000, 3000);
+}
+function rng(seed) {
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+
+/* ---------- 颜色和贴图 ---------- */
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mixc = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+const rgb = a => `rgb(${a.map(Math.round).join(',')})`;
+const rgba = (a, o) => `rgba(${a.map(Math.round).join(',')},${o})`;
+let C = {}, SPR = {};
+// 一团烟：几团大小不一的软雾叠在一起，有起伏，不是正圆
+function smokeSprite(c, seed) {
+  const R = rng(seed), cv = document.createElement('canvas'); cv.width = cv.height = 128;
+  const g = cv.getContext('2d');
+  for (let i = 0; i < 9; i++) {
+    const x = 64 + (R() - .5) * 40, y = 64 + (R() - .5) * 40, rad = 20 + R() * 20, a = .28 + R() * .32;
+    const gr = g.createRadialGradient(x, y, 0, x, y, rad);
+    gr.addColorStop(0, rgba(c, a)); gr.addColorStop(.5, rgba(c, a * .5)); gr.addColorStop(1, rgba(c, 0));
+    g.fillStyle = gr; g.beginPath(); g.arc(x, y, rad, 0, TAU); g.fill();
+  }
+  return cv;
+}
+function readTheme() {
+  C = { bg: hex(cssVar('--bg')), body: hex(cssVar('--body')), track: hex(cssVar('--track')), bodyInk: hex(cssVar('--body-ink')), card: hex(cssVar('--card')), hl: hex(cssVar('--hl')), line: hex(cssVar('--line')) };
+  C.trackOn = mixc(C.track, C.body, .45);
+  C.smoke = C.body;   // 烟就是组件本身的材料，同一个颜色
+  SPR.smoke = [11, 23, 37].map(s => smokeSprite(C.smoke, s));
+  const cv = document.createElement('canvas'); cv.width = cv.height = 32;
+  const g = cv.getContext('2d'), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gr.addColorStop(0, rgba(C.smoke, 1)); gr.addColorStop(.35, rgba(C.smoke, .8)); gr.addColorStop(1, rgba(C.smoke, 0));
+  g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
+  SPR.spore = cv;
+}
+
+// 带颜色的烟（颜色组件用）：同一种烟团，换个颜色画，按颜色缓存；颜色量化一下，拖的时候不会一直新建
+const COLSPR = new Map();
+function colSpr(c) {
+  const q = c.map(v => clamp(Math.round(v / 6) * 6, 0, 255)), key = q.join(',');
+  let s = COLSPR.get(key);
+  if (!s) { s = [11, 23, 37].map(sd => smokeSprite(q, sd)); COLSPR.set(key, s); if (COLSPR.size > 64) COLSPR.delete(COLSPR.keys().next().value); }
+  return s;
+}
+
+/* ---------- 烟 ---------- */
+const makeSmoke = () => ({ parts: [], acc: 0, idle: 0 });
+function smokeEmit(M, n, x, y, o = {}) {
+  for (let i = 0; i < n && M.parts.length < 420; i++) {
+    const spore = o.kind === 'spore';
+    const ang = Math.random() * TAU, sp = (o.radial || 0) * (.35 + Math.random() * .9);
+    const r0 = (o.r || (spore ? 1 : 6)) * (.7 + Math.random() * .6);
+    M.parts.push({
+      spore, x: x + J() * (o.spread || 0), y: y + J() * (o.spreadY ?? o.spread ?? 0),
+      vx: (o.vx || 0) + Math.cos(ang) * sp + J() * (o.jit || 0), vy: (o.vy || 0) + Math.sin(ang) * sp + J() * (o.jit || 0),
+      r0, rMax: r0 * (o.grow || (spore ? 1.5 : 4)) * (.8 + Math.random() * .4),
+      t: 0, life: (o.life || 1.6) * (.7 + Math.random() * .6), a: (o.a || (spore ? .45 : .22)) * (.75 + Math.random() * .5),
+      v: (Math.random() * 3) | 0, rot: Math.random() * TAU, spin: J() * .9,
+      ph: Math.random() * TAU, w: .8 + Math.random() * 1.6, amp: 5 + Math.random() * 12, lift: (o.lift ?? 26) * (.6 + Math.random() * .8), col: o.col,
+    });
+  }
+}
+function smokeStep(M, dt) {
+  const fr = Math.exp(-1.9 * dt);
+  for (let i = M.parts.length - 1; i >= 0; i--) {
+    const p = M.parts[i];
+    p.t += dt;
+    if (p.t >= p.life) { M.parts.splice(i, 1); continue; }
+    p.vx = p.vx * fr + Math.sin(p.t * p.w + p.ph) * p.amp * 3 * dt;   // 打着旋
+    p.vy = p.vy * fr - p.lift * dt;                                      // 往上飘
+    p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.spin * dt;
+  }
+}
+// 每块画布都有边：烟离边不到一个身位就开始缩，碰到边以前缩没，不会被切成一条直线
+function edgeK(ctx, k, x, y, r) {
+  const W = ctx.canvas.width / k, H = ctx.canvas.height / k, d = Math.min(x, y, W - x, H - y);
+  return d >= r * 1.6 ? 1 : smooth(r * .25, r * 1.6, d);
+}
+function smokeDraw(M, ctx, k) {
+  const dens = smokeDens();
+  for (const p of M.parts) {
+    // 过了阈值滤镜以后：透明度高于一半的部分变成硬边实心，低于一半的消失。
+    // 所以透明度往下掉 = 云团从边缘往里缩，最后缩没
+    const u = p.t / p.life, env = smooth(0, .08, u) * Math.pow(1 - u, .7);
+    const r = p.r0 + (p.rMax - p.r0) * (1 - Math.exp(-u * 3)), e = edgeK(ctx, k, p.x, p.y, r * (p.spore ? 1.6 : 1.3));
+    if (e <= 0) continue;
+    ctx.globalAlpha = Math.min(1, p.a * 3.4 * dens) * env * e;
+    if (p.spore) {
+      ctx.setTransform(k, 0, 0, k, 0, 0);
+      const s = r * 3.2 * (.6 + .4 * e); ctx.drawImage(SPR.spore, p.x - s / 2, p.y - s / 2, s, s);
+    } else {
+      const s = r * 2.6 * (.6 + .4 * e), cs = Math.cos(p.rot) * k, sn = Math.sin(p.rot) * k;
+      ctx.setTransform(cs, sn, -sn, cs, p.x * k, p.y * k);
+      ctx.drawImage((p.col ? colSpr(p.col) : SPR.smoke)[p.v], -s / 2, -s / 2, s, s);
+    }
+  }
+  ctx.globalAlpha = 1; ctx.setTransform(k, 0, 0, k, 0, 0);
+}
+
+/* ---------- 软轮廓 ---------- */
+function rrAt(s, w, h, r) {
+  const a = w - 2 * r, b = h - 2 * r, q = Math.PI * r / 2;
+  if (s < a) return [r + s, 0, 0, -1]; s -= a;
+  if (s < q) { const t = s / r - Math.PI / 2; return [w - r + Math.cos(t) * r, r + Math.sin(t) * r, Math.cos(t), Math.sin(t)]; } s -= q;
+  if (s < b) return [w, r + s, 1, 0]; s -= b;
+  if (s < q) { const t = s / r; return [w - r + Math.cos(t) * r, h - r + Math.sin(t) * r, Math.cos(t), Math.sin(t)]; } s -= q;
+  if (s < a) return [w - r - s, h, 0, 1]; s -= a;
+  if (s < q) { const t = s / r + Math.PI / 2; return [r + Math.cos(t) * r, h - r + Math.sin(t) * r, Math.cos(t), Math.sin(t)]; } s -= q;
+  if (s < b) return [0, h - r - s, -1, 0]; s -= b;
+  const t = s / r + Math.PI; return [r + Math.cos(t) * r, r + Math.sin(t) * r, Math.cos(t), Math.sin(t)];
+}
+function softBody(w, h, r, n) {
+  const P = 2 * (w - 2 * r) + 2 * (h - 2 * r) + TAU * r, pts = [];
+  for (let i = 0; i < n; i++) {
+    const [x, y, nx, ny] = rrAt(i / n * P * .99999, w, h, r);
+    pts.push({ bx: x - w / 2, by: y - h / 2, nx, ny, d: 0, v: 0, f: 0 });
+  }
+  return { w, h, pts, tx: spring(0), ty: spring(0), sx: spring(1), sy: spring(1), sc: spring(1), halo: spring(0) };
+}
+function bodyStep(B, h) {
+  const [k, c] = kc(ptResp(), ptZeta()), kn = k * .8, P = B.pts, n = P.length;
+  for (let i = 0; i < n; i++) {
+    const p = P[i], a = P[(i - 1 + n) % n], b = P[(i + 1) % n];
+    p.acc = -k * (p.d - p.f) - c * p.v + kn * (a.d + b.d - 2 * p.d);
+  }
+  for (const p of P) { p.v += p.acc * h; p.d = clamp(p.d + p.v * h, -16, 16); }
+  stepS(B.halo, h, .45, 1);
+}
+const toLocal = (B, cx, cy, x, y) => { const s = B.sc.x || 1; return [(x - cx - B.tx.x) / (B.sx.x * s), (y - cy - B.ty.x) / (B.sy.x * s)]; };
+const ptWorld = (B, cx, cy, p) => { const s = B.sc.x; return [cx + B.tx.x + B.sx.x * s * (p.bx + p.nx * p.d), cy + B.ty.x + B.sy.x * s * (p.by + p.ny * p.d)]; };
+function forEachNear(B, lx, ly, R, fn) {
+  for (const p of B.pts) {
+    const dx = lx - p.bx, dy = ly - p.by, d = Math.hypot(dx, dy);
+    if (d < R) fn(p, (1 - d / R) ** 2, dx * p.nx + dy * p.ny);
+  }
+}
+// 浅色卡：卡片是底色，描一圈线才看得出边
+const lightCards = () => document.documentElement.getAttribute('data-card') === 'light';
+const cardLine = () => (lightCards() ? rgb(C.line) : null);
+function drawBody(ctx, B, cx, cy, color, k, stroke) {
+  const P = B.pts, n = P.length, W = P.map(p => ptWorld(B, cx, cy, p));
+  ctx.beginPath();
+  ctx.moveTo((W[n - 1][0] + W[0][0]) / 2, (W[n - 1][1] + W[0][1]) / 2);
+  for (let i = 0; i < n; i++) {
+    const a = W[i], b = W[(i + 1) % n];
+    ctx.quadraticCurveTo(a[0], a[1], (a[0] + b[0]) / 2, (a[1] + b[1]) / 2);
+  }
+  ctx.closePath();
+  const hl = reduced ? 0 : B.halo.x;
+  if (hl > .01) {   // 边缘晕开：同色的一圈雾气
+    ctx.shadowColor = rgba(C.body, Math.min(.85, .7 * hl)); ctx.shadowBlur = 22 * k * hl * (.4 + F.smoke);
+  }
+  ctx.fillStyle = color; ctx.fill();
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+  if (stroke) { ctx.lineWidth = 1.5; ctx.strokeStyle = stroke; ctx.stroke(); }
+}
+function bodyPick(B, filter) { const c = B.pts.filter(filter); return c.length ? c : B.pts; }
+// 从轮廓上的点往外冒烟
+function smokeFromBody(M, B, cx, cy, n, filter, o) {
+  const cand = bodyPick(B, filter);
+  for (let i = 0; i < n; i++) {
+    const p = cand[(Math.random() * cand.length) | 0], [x, y] = ptWorld(B, cx, cy, p);
+    const sp = (o.speed || 0) * (.4 + Math.random() * .9);
+    smokeEmit(M, 1, x, y, { ...o, vx: p.nx * sp + (o.vx || 0), vy: p.ny * sp + (o.vy || 0), jit: o.jit ?? 20 });
+  }
+}
+// 一小朵云：三四团挨着一起冒出来、一起往上飘
+function cloudlet(M, x, y, o) {
+  const n = 3 + (Math.random() < .5 ? 1 : 0), vx = J() * 14, vy = o.vy ?? -16;
+  for (let i = 0; i < n; i++) smokeEmit(M, 1, x + (i - (n - 1) / 2) * (o.r || 4) * 1.4, y + J() * 3, { ...o, vx, vy, jit: 4 });
+}
+
+function setup(cv) {
+  const o = { cv, ctx: cv.getContext('2d'), W: 1, H: 1, k: 1 };
+  const rs = () => {
+    const r = cv.getBoundingClientRect();
+    o.W = Math.max(1, r.width); o.H = Math.max(1, r.height); o.k = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.round(o.W * o.k), h = Math.round(o.H * o.k);
+    if (cv.width === w && cv.height === h) return;
+    cv.width = w; cv.height = h;
+    if (o.comp && o.visible) try { o.comp.draw(); } catch (e) {}   // 改尺寸会把画布清空：当场补画一遍，不然那一帧是空的，看起来就是一闪
+  };
+  rs(); new ResizeObserver(rs).observe(cv);
+  o.rs = rs; o.visible = true; lastSetup = o;
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => { o.visible = es[es.length - 1].isIntersecting; }, { rootMargin: '80px' }).observe(cv);
+  return o;
+}
+function clear(c) {   // 不在屏幕上就不画（返回 false），省下滤镜的开销
+  if (!c.visible) return false;
+  c.ctx.setTransform(1, 0, 0, 1, 0, 0); c.ctx.clearRect(0, 0, c.cv.width, c.cv.height); c.ctx.setTransform(c.k, 0, 0, c.k, 0, 0);
+  return true;
+}
+function pill(ctx, x, y, w, h) {
+  const r = Math.min(h, w) / 2;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arc(x + w - r, y + r, r, -Math.PI / 2, Math.PI / 2);
+  ctx.lineTo(x + r, y + h); ctx.arc(x + r, y + r, r, Math.PI / 2, Math.PI * 1.5); ctx.closePath();
+}
+const hovering = el => { const s = { on: false }; el.addEventListener('pointerenter', () => { s.on = true; }); el.addEventListener('pointerleave', () => { s.on = false; }); return s; };
+
+const comps = [];
+let lastSetup = null;
+comps.push = function (c) { if (!c.cvo) c.cvo = lastSetup; if (c.cvo) c.cvo.comp = c; return Array.prototype.push.call(this, c); };   // 每个组件记住自己的画布，看不见就整个跳过
+const ptr = { x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0, on: false, free: true, s: [], moveT: 0 };
+const stage = $('#stage') || document.body;   // 文档站里没有展示台：整页都算
+stage.addEventListener('pointermove', e => {
+  if (!ptr.on) { ptr.px = e.clientX; ptr.py = e.clientY; }
+  ptr.x = e.clientX; ptr.y = e.clientY; ptr.on = true; ptr.free = e.buttons === 0;
+  const t = performance.now(); ptr.s.push({ t, x: e.clientX, y: e.clientY });
+  while (ptr.s.length > 2 && t - ptr.s[0].t > 70) ptr.s.shift();
+  const a = ptr.s[0], b = ptr.s[ptr.s.length - 1], dt = (b.t - a.t) / 1000;
+  if (dt > .008) { ptr.vx = (b.x - a.x) / dt; ptr.vy = (b.y - a.y) / dt; }
+  ptr.moveT = t;
+});
+stage.addEventListener('pointerleave', () => { ptr.on = false; ptr.s = []; ptr.vx = ptr.vy = 0; });
+const swipeThr = () => 900 - F.smoke * 350;   // 鼠标多快算"划过"（像素/秒）
+function distSeg(px, py, x0, y0, x1, y1) {
+  const dx = x1 - x0, dy = y1 - y0, L = dx * dx + dy * dy;
+  const t = L ? clamp(((px - x0) * dx + (py - y0) * dy) / L, 0, 1) : 0;
+  return Math.hypot(px - x0 - dx * t, py - y0 - dy * t);
+}
+const insideRR = (x, y, hw, hh, r) => { const dx = Math.max(0, Math.abs(x) - (hw - r)), dy = Math.max(0, Math.abs(y) - (hh - r)); return dx * dx + dy * dy <= r * r; };
+// 学 goop 的"划过溅水"：鼠标快速穿过实心的组件——进去那侧被压凹、往回溅一点；出去那侧鼓出来，烟被手带出去
+function bodySwipe(B, cx, cy, cvEl, M, hw, hh, rr) {
+  if (!ptr.on || !ptr.free || reduced) return;
+  const sp = Math.hypot(ptr.vx, ptr.vy);
+  if (sp < swipeThr()) return;
+  const r = cvEl.getBoundingClientRect(), x0 = ptr.px - r.left, y0 = ptr.py - r.top, x1 = ptr.x - r.left, y1 = ptr.y - r.top;
+  const N = 10, L = []; let first = -1, last = -1;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, q = toLocal(B, cx, cy, x0 + (x1 - x0) * t, y0 + (y1 - y0) * t);
+    L.push(q);
+    if (insideRR(q[0], q[1], hw, hh, rr)) { if (first < 0) first = i; last = i; }
+  }
+  if (first < 0 || (first === 0 && last === N)) return;
+  const now = performance.now();
+  const f = clamp((sp - swipeThr()) / 900, 0, 1.4) + .35, n = smokeK(), k = deformK();
+  const ux = ptr.vx / sp, uy = ptr.vy / sp, cap = m => Math.min(sp * m, (30 + 80 * F.bounce) * (.6 + .4 * F.smoke) + 15 * f);   // 飞多远看弹性
+  const hit = (q, sign) => {
+    forEachNear(B, q[0], q[1], 60, (p, pr) => { p.v += sign * pr * (50 + 110 * f) * k * (.35 + F.bounce); });
+    const s = B.sc.x, wx = cx + B.tx.x + B.sx.x * s * q[0], wy = cy + B.ty.x + B.sy.x * s * q[1];
+    if (!n) return;
+    if (sign > 0) {
+      smokeEmit(M, Math.round((3 + 5 * f) * n) + 1, wx, wy, { vx: ux * cap(.3), vy: uy * cap(.3), jit: 30, spread: 6, r: 3.2, grow: 3.8, a: .3, life: 1.1, lift: 5 });
+      smokeEmit(M, Math.round(7 * f * n), wx, wy, { kind: 'spore', vx: ux * cap(.42) * 1.2, vy: uy * cap(.42) * 1.2, jit: 40, r: .9, a: .4, life: .9, lift: 2 });
+    } else {
+      smokeEmit(M, Math.round((2 + 3 * f) * n) + 1, wx, wy, { vx: -ux * 60, vy: -uy * 60, jit: 40, spread: 4, r: 3.2, grow: 4, a: .24, life: .9, lift: 5 });
+    }
+  };
+  // 进、出各自有冷却，一次划过能同时有"压进去"和"带出去"
+  if (first > 0 && now - (B.inT || 0) > 120) { B.inT = now; hit(L[first], -1); }
+  if (last < N && now - (B.outT || 0) > 120) { B.outT = now; hit(L[last], 1); }
+}
+// 雾做的东西被手划过：离轨迹近的雾被带走一截，再弹回来
+function stirFog(fog, cvEl, M) {
+  if (!ptr.on || !ptr.free || reduced) return;
+  const sp = Math.hypot(ptr.vx, ptr.vy);
+  if (sp < swipeThr() * .45) return;
+  const r = cvEl.getBoundingClientRect(), x0 = ptr.px - r.left, y0 = ptr.py - r.top, x1 = ptr.x - r.left, y1 = ptr.y - r.top;
+  let hit = null;
+  for (const f of fog) {
+    const d = distSeg(f.x, f.y, x0, y0, x1, y1);
+    if (d < 28) { const fall = (1 - d / 28) ** 2, m = Math.min(.3, 260 / sp); f.vx += ptr.vx * m * fall; f.vy += ptr.vy * m * fall; hit = f; }
+  }
+  if (hit && smokeK() && Math.random() < .6) { const m = Math.min(1, 150 / sp); smokeEmit(M, 2, hit.x, hit.y, { vx: ptr.vx * m, vy: ptr.vy * m, jit: 30, r: 3, grow: 4.5, a: .24, life: 1, lift: 4 }); }
+}
+
+/* ================= 新组件公用：一小团雾做的东西 ================= */
+function makeFog(n, R) {
+  const ps = [];
+  for (let i = 0; i < n; i++) {
+    let u, v; do { u = Math.random() * 2 - 1; v = Math.random() * 2 - 1; } while (u * u + v * v > 1);
+    ps.push({ u, v, x: 0, y: 0, vx: 0, vy: 0, rs: .08 + Math.random() * .2, r: R * (.8 + Math.random() * .7), a: .45 + Math.random() * .25,
+      ph: Math.random() * TAU, w: .6 + Math.random() * 1.2, rot: Math.random() * TAU, spin: J() * .6, k: (Math.random() * 3) | 0 });
+  }
+  return ps;
+}
+// 让每颗雾朝 (cx, cy) 周围 ±ax、±ay 的位置走；travel 时慢、稠、翻滚。返回平均还差多远
+function fogStep(ps, cx, cy, ax, ay, travel, t, dt, flat, slow = 1) {
+  const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub, dk = deformK();
+  const [k, c] = kc(travel ? .22 * (1.5 - F.speed * .7) * slow : .1, travel ? .72 : .8);
+  if (travel) { const sk = fogSpread(); ax *= sk; ay *= sk; }   // 烟雾越高，化开时散得越开
+  let dsum = 0;
+  for (const p of ps) {
+    const tx = cx + p.u * ax + Math.sin(t * p.w + p.ph) * .6;
+    const ty = cy + p.v * ay + Math.cos(t * p.w * .8 + p.ph) * .6 + (travel && !flat ? Math.sin(t * 3.5 * p.w + p.ph) * 3 * dk : 0);
+    const kk = k * (.6 + p.rs * 2.5);   // 每颗快慢不一，散得开
+    for (let i = 0; i < sub; i++) { p.vx += (-kk * (p.x - tx) - c * p.vx) * h; p.vy += (-kk * (p.y - ty) - c * p.vy) * h; p.x += p.vx * h; p.y += p.vy * h; }
+    p.rot += p.spin * dt;
+    if (reduced) { p.x = tx; p.y = ty; p.vx = p.vy = 0; }
+    dsum += Math.hypot(p.x - tx, p.y - ty);
+  }
+  return dsum / ps.length;
+}
+function fogDraw(ctx, k, ps, vis, col) {
+  const fs = fogSize(), spr = col ? colSpr(col) : SPR.smoke;
+  for (const p of ps) {
+    const e = edgeK(ctx, k, p.x, p.y, p.r * fs * 1.3);
+    if (e <= 0) continue;
+    ctx.globalAlpha = Math.min(1, p.a * vis * 2.2) * e;
+    const s = p.r * 2.6 * fs * (.6 + .4 * e), cs = Math.cos(p.rot) * k, sn = Math.sin(p.rot) * k;
+    ctx.setTransform(cs, sn, -sn, cs, p.x * k, p.y * k);
+    ctx.drawImage(spr[p.k], -s / 2, -s / 2, s, s);
+  }
+  ctx.globalAlpha = 1; ctx.setTransform(k, 0, 0, k, 0, 0);
+}
+const centerIn = (el, cv) => { const a = el.getBoundingClientRect(), b = cv.cv.getBoundingClientRect(); return [a.left + a.width / 2 - b.left, a.top + a.height / 2 - b.top]; };
+function rrect(ctx, x, y, w, h, r) {
+  if (w < 0) { x += w; w = -w; } if (h < 0) { y += h; h = -h; }   // 量出来是反的也别报错
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function exhaustFrom(M, ps, dt, n) {   // 飘的时候，跑得快的那几颗往身后喷
+  if (!n) return;
+  for (const p of ps) {
+    const sp = Math.hypot(p.vx, p.vy);
+    if (sp > 110 && Math.random() < dt * 4 * n) smokeEmit(M, 1, p.x, p.y, { vx: -p.vx * .3, vy: -p.vy * .3, r: 1.8, grow: 3.5, a: .26, life: .8, lift: 4 });
+  }
+}
+
+function lumpImpulse(B, count, k) {   // 轮廓上随机鼓出几块、凹进几块
+  const P = B.pts, n0 = P.length, lumps = Array.from({ length: count }, () => [Math.random() * n0, (Math.random() < .7 ? 1 : -.6) * (140 + Math.random() * 180) * k]);
+  P.forEach((p, i) => {
+    p.d = 0; p.v = 30 * k;
+    for (const [c, a] of lumps) { let di = Math.abs(i - c); di = Math.min(di, n0 - di); p.v += a * Math.exp(-((di / 4) ** 2)); }
+  });
+}
+// 一根实心的条上挂几颗小水珠：条一加速，水珠就往反方向晃，慢慢晃回原位；静下来时缩回条里看不见
+// 一根实心的条上挂几颗小水珠：条一加速，水珠往反方向晃；跑得越快，水珠鼓得越大、拉得越长，快到一定程度身后还拖一颗小的；停下来慢慢缩回条里
+// 一滴会流的实心：头先到，尾巴被拖着跟上；拉长时变细（体积差不多不变），尾巴往身后喷一点，头到了 q 一下。
+// 隔得远的二维移动（日历的日子、以后的月份／年份格子、列表高亮）都用它：本体自己在流，不是散成一堆小颗粒
+function makeDrop(R, M) { return { hx: spring(0), hy: spring(0), tx: spring(0), ty: spring(0), s: spring(1), cs: spring(1), R, M, placed: false, moving: false, popped: true }; }
+function dropTo(D, x, y, jump) {
+  if (!D.placed || jump || reduced) { for (const [a, v] of [[D.hx, x], [D.tx, x], [D.hy, y], [D.ty, y]]) { a.x = a.t = v; a.v = 0; } D.placed = true; D.moving = false; return; }
+  const dx = x - D.hx.x, dy = y - D.hy.x, L = Math.hypot(dx, dy), n = smokeK();
+  D.hx.t = D.tx.t = x; D.hy.t = D.ty.t = y;
+  if (L > 12) { D.moving = true; D.popped = false; if (D.M && n) smokeEmit(D.M, 2, D.tx.x - dx / L * 10, D.ty.x - dy / L * 10, { vx: -dx / L * 40, vy: -dy / L * 40, jit: 14, r: 2.6, grow: 3.2, a: .28, life: .8, lift: 6 }); }
+}
+function dropStep(D, dt) {
+  const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub;
+  for (let i = 0; i < sub; i++) {
+    stepS(D.hx, h, resp() * 1.15, Math.max(.45, zeta())); stepS(D.hy, h, resp() * 1.15, Math.max(.45, zeta()));         // 头：先走，带一点冲过头
+    stepS(D.tx, h, resp() * 2.2, Math.min(1, zeta() + .2)); stepS(D.ty, h, resp() * 2.2, Math.min(1, zeta() + .2));     // 尾：慢，被拖着走（跟悬停的慢水一个速度）
+    stepS(D.s, h, .26, Math.max(.3, zeta() * .6)); stepS(D.cs, h, .22, Math.max(.25, zeta() * .7));
+  }
+  const L = Math.hypot(D.hx.x - D.tx.x, D.hy.x - D.ty.x), hs = Math.hypot(D.hx.v, D.hy.v), ts = Math.hypot(D.tx.v, D.ty.v);
+  if (D.moving && !D.popped && Math.hypot(D.hx.x - D.hx.t, D.hy.x - D.hy.t) < 2.5) { D.popped = true; if (!reduced) { D.cs.x = .86; D.cs.v = 0; } }
+  if (D.moving && L < .6 && hs + ts < 6) D.moving = false;
+  const n = smokeK();
+  if (D.M && n && ts > 150) { D.M.acc += ts * .02 * n * dt; while (D.M.acc >= 1) { D.M.acc -= 1; smokeEmit(D.M, 1, D.tx.x, D.ty.x, { vx: -D.tx.v * .12, vy: -D.ty.v * .12, jit: 12, r: 2.2, grow: 3.2, a: .28, life: .8, lift: 5 }); } }
+}
+function dropDraw(ctx, k, D, col) {
+  const sz = Math.max(0, D.s.x); if (sz < .02) return;
+  const hx = D.hx.x, hy = D.hy.x, tx = D.tx.x, ty = D.ty.x, L = Math.hypot(hx - tx, hy - ty), R = D.R * sz;
+  ctx.fillStyle = rgb(col || C.body); goo(ctx, k, true, 10, col);
+  ctx.beginPath();
+  if (L < 1.5) ctx.ellipse(hx, hy, R * D.cs.x, R * (2 - D.cs.x), 0, 0, TAU);
+  else {
+    const f = clamp(Math.sqrt(2.6 * R / (L + 2.6 * R)), .42, 1), rh = R * f * 1.05, rt = R * f * .5, n = Math.min(48, Math.ceil(L / 3) + 2);
+    for (let i = 0; i <= n; i++) { const u = i / n, x = tx + (hx - tx) * u, y = ty + (hy - ty) * u, r = rt + (rh - rt) * u * u * (3 - 2 * u); ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, TAU); }
+  }
+  ctx.fill(); goo(ctx, k, false);
+}
+// 软边：画实心条、水珠、圆头时带一圈同色的晕。过了阈值以后，单独一个东西大小不变；两个靠得近，晕叠起来过了半透明，中间就像水一样连上
+function goo(ctx, k, on, r = 9, col) { if (on && !reduced) { ctx.shadowColor = rgb(col || C.body); ctx.shadowBlur = r * k; } else { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; } }
+function makeBeads(n) { return Array.from({ length: n }, (_, i) => ({ f: (i + .5 + J() * .5) / n, p: 0, v: 0, m: .7 + Math.random() * .6, sz: 0, sv: 0 })); }
+function beadsStep(bs, acc, vel, dt) {
+  const [k, c] = kc(.42, reduced ? 1 : .2), g = .5 * (.4 + F.bounce) * (.4 + deformK());
+  const [ks, cs] = kc(.2, .7);
+  const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub, spd = Math.abs(vel);
+  for (const b of bs) {
+    const tgt = reduced ? 0 : clamp(spd / 420 + Math.abs(b.v) / 170, 0, 1.35) * b.m;
+    for (let i = 0; i < sub; i++) {
+      b.v += (-k * (b.p + vel * .012 * g) - c * b.v - acc * .8 * g) * h;   // 加速时往反方向晃，匀速时稍微落在后面
+      b.p = clamp(b.p + b.v * h, -18, 18);
+      b.sv += (-ks * (b.sz - tgt) - cs * b.sv) * h; b.sz += b.sv * h;      // 鼓起来快，缩回去带一点回弹
+    }
+  }
+  if (reduced) for (const b of bs) { b.p = 0; b.v = 0; b.sz = 0; b.sv = 0; }
+}
+function beadsDraw(ctx, bs, x0, y0, x1, y1, half, gk = 1) {
+  const L = Math.hypot(x1 - x0, y1 - y0); if (L < 4) return;
+  const ux = (x1 - x0) / L, uy = (y1 - y0) / L, ang = Math.atan2(uy, ux), gain = 4.2 * gk * (.45 + .9 * F.smoke);
+  ctx.fillStyle = rgb(C.body);
+  for (const b of bs) {
+    const pos = b.f * L + b.p;
+    if (pos < 0 || pos > L) continue;
+    const sz = Math.max(0, b.sz), bump = sz * gain + Math.abs(b.p) * .05;
+    if (bump < .35) continue;
+    const st = 1 + Math.min(1.5, Math.abs(b.v) / 80 + sz * .35);          // 沿着条拉长
+    const rx = (half + bump) * st, ry = half + bump / Math.sqrt(st), x = x0 + ux * pos, y = y0 + uy * pos;
+    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, ang, 0, TAU); ctx.fill();
+    if (st > 1.75 && bump > 1.6) {                                        // 甩得快：身后拖一颗小的，像要断开又还连着
+      const dir = Math.sign(b.v) || 1, off = -dir * rx * 1.15, tr = half + bump * .45;
+      ctx.beginPath(); ctx.arc(x + ux * off, y + uy * off, tr, 0, TAU); ctx.fill();
+    }
+  }
+}
+// 一块会 q 弹鼓出来、化成小云消失的实心卡片（弹出面板、下拉菜单、对话框共用）
+function makeBloom(o) {
+  const st = { B: softBody(o.w, o.h, o.r, o.n), open: false, closing: false, t: 0 };
+  st.B.sc.x = 0; st.B.sc.t = 0;
+  st.resize = (w, h) => { const sc = st.B.sc; st.B = softBody(w, h, o.r, o.n); st.B.sc = sc; o.w = w; o.h = h; };
+  st.show = () => {
+    if (st.open) return;
+    st.open = true; st.closing = false; st.t = 0;
+    if (o.el) o.el.hidden = false;
+    const B = st.B, calm = o.calm;
+    B.sc.x = reduced ? 1 : calm ? .62 : .3; B.sc.v = 0; B.sc.t = 1;
+    lumpImpulse(B, calm ? 4 : 7, deformK() * (calm ? .45 : 1));   // 严肃的：鼓包小一点，但照样 q 着弹回去
+    const n = smokeK() * (calm ? 0 : 1);
+    if (n) { const [x, y] = o.center(); smokeFromBody(o.M, B, x, y, Math.round(12 + 14 * n), () => true, { speed: 60 + 45 * n, r: 5, grow: 3, a: .3, life: .85, lift: 10 }); }
+  };
+  st.hide = () => {
+    if (!st.open) return;
+    st.open = false; st.closing = true; st.B.sc.t = 0;
+    const n = o.calm ? 0 : smokeK();   // 严肃的：消失时也不冒烟
+    if (n) { const [x, y] = o.center(); smokeFromBody(o.M, st.B, x, y, Math.round(6 + 8 * n), () => true, { speed: 10, vy: -22, r: 5.5, grow: 2.6, a: .32, life: 1.05, lift: 24 }); }
+  };
+  st.step = dt => {
+    const B = st.B;
+    for (const p of B.pts) p.f = 0;
+    const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub;
+    for (let i = 0; i < sub; i++) {
+      if (st.open) stepS(B.sc, h, o.calm ? .26 + (1 - F.speed) * .1 : .28 + (1 - F.speed) * .12, reduced ? 1 : o.calm ? Math.max(.4, .7 - F.bounce * .34) : Math.max(.28, .55 - F.bounce * .35));
+      else stepS(B.sc, h, .15, 1);
+      bodyStep(B, h);
+    }
+    if (B.sc.x < 0) { B.sc.x = 0; B.sc.v = 0; }
+    const s = B.sc.x;
+    if (o.el) { o.el.style.transform = (o.base || '') + ` scale(${s.toFixed(4)})`; o.el.style.opacity = clamp((s - .55) / .35, 0, 1).toFixed(3); }
+    if (st.closing && s < .03) { st.closing = false; if (o.el) o.el.hidden = true; if (o.onClosed) o.onClosed(); }
+  };
+  st.draw = (ctx, k) => { if (st.B.sc.x > .01) { const [x, y] = o.center(); drawBody(ctx, st.B, x, y, rgb(C.card), k, cardLine()); } };
+  return st;
+}
+
+/* ================= 凝结／蒸发：复选、切换组、步骤点共用 =================
+   on：四周的云团聚过来，凝成实心；off：散成小云往上飘、缩没 */
+function makeCondense(n, R) {
+  return { ps: makeFog(n, R), c: spring(0), cs: spring(1), vis: spring(0), travel: false, rise: false, placed: false };
+}
+function condenseOn(it, x, y, spread) {
+  spread *= fogSpread();
+  it.rise = false; it.c.t = 0; it.vis.x = 1; it.vis.t = 1; it.travel = !reduced;
+  if (reduced) { it.c.x = it.c.t = 1; it.vis.x = it.vis.t = .1; return; }
+  for (const p of it.ps) { const a = Math.random() * TAU, d = spread * (1 + Math.random() * .7); p.x = x + Math.cos(a) * d; p.y = y + Math.sin(a) * d * .8; p.vx = p.vy = 0; }
+}
+function condenseOff(it, M, x, y, quiet) {
+  it.travel = false; it.rise = !reduced; it.c.t = 0; it.c.x = Math.min(it.c.x, .4); it.vis.x = Math.max(it.vis.x, .95); it.vis.t = 0;
+  if (reduced) { it.c.x = 0; it.vis.x = 0; return; }
+  for (const p of it.ps) { p.vx += J() * 50; p.vy -= 30 + Math.random() * 60; }
+  const n = quiet ? 0 : smokeK(); if (n) smokeEmit(M, 2, x, y - 6, { vy: -40, jit: 20, spread: 12, r: 3, grow: 3.4, a: .3, life: 1, lift: 20 });
+}
+function condenseStep(it, x, y, half, t, dt, slow = 1) {
+  if (!it.placed) { for (const p of it.ps) { p.x = x + p.u * half; p.y = y + p.v * half; } it.placed = true; }
+  const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub;
+  for (let i = 0; i < sub; i++) { stepS(it.c, h, .1, 1); stepS(it.cs, h, .22, Math.max(.25, zeta() * .7)); stepS(it.vis, h, it.rise ? .55 : .18, 1); }
+  const d = it.rise ? fogStep(it.ps, x, y - 24, half * 1.6, half * .7, true, t, dt) : fogStep(it.ps, x, y, half, half, it.travel, t, dt, false, slow);
+  if (it.travel && d < 2) { it.travel = false; it.c.t = 1; it.cs.x = .82; it.cs.v = 0; it.cs.t = 1; it.vis.t = .1; return true; }
+  if (it.rise && it.vis.x < .02) it.rise = false;
+  return false;
+}
+/* ================= 表单公用：校验没过时输入框左右晃一下，错误提示边上凝出一颗小点；改对了小点散掉 =================
+   只在离开输入框、按回车、提交时校验；打字本身不加戏 */
+function fieldFx(input, err, desc, cv, M) {
+  const f = { input, err, desc, sx: spring(0), dot: makeCondense(10, 2.2), bad: false, x: 0, y: 0 };
+  const pos = () => { const r = err.getBoundingClientRect(), c = cv.cv.getBoundingClientRect(); return [r.left - c.left - 7, r.top - c.top + r.height / 2]; };
+  f.set = (bad, shake) => {
+    input.setAttribute('aria-invalid', String(bad));
+    err.hidden = !bad; if (desc) desc.hidden = bad;
+    if (bad) { [f.x, f.y] = pos(); if (!f.bad) condenseOn(f.dot, f.x, f.y, 10); }
+    else if (f.bad) condenseOff(f.dot, M, f.x, f.y, !shake);
+    if (bad && shake && !reduced) f.sx.v += (220 + 160 * F.bounce) * (.4 + deformK());
+    f.bad = bad;
+  };
+  f.step = (dt, t) => {
+    const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub;
+    for (let i = 0; i < sub; i++) stepS(f.sx, h, .13, reduced ? 1 : .12 + (1 - F.bounce) * .2);
+    const tx = Math.abs(f.sx.x) > .05 ? `translateX(${f.sx.x.toFixed(2)}px)` : '';
+    if (input.style.transform !== tx) input.style.transform = tx;
+    if (f.bad) [f.x, f.y] = pos();
+    condenseStep(f.dot, f.x, f.y, 4, t, dt);
+  };
+  f.draw = (ctx, k) => {
+    fogDraw(ctx, k, f.dot.ps, f.dot.vis.x);
+    if (f.dot.c.x > .01) { ctx.globalAlpha = f.dot.c.x; ctx.beginPath(); ctx.arc(f.x, f.y, 3.6 * f.dot.cs.x, 0, TAU); ctx.fillStyle = rgb(C.body); ctx.fill(); ctx.globalAlpha = 1; }
+  };
+  return f;
+}
+// 一块在几个格子之间流动的实心：前头先到，后头被拖着跟上（下拉菜单、工具栏、树、列表框共用）
+// 一块实心（菜单栏、导航顶上开着的那一项底下的块）收起来时：不平着缩没，化成几团小云往上飘，块本身从两头往中间缩
+function slabPuff(M, x0, x1, y, h) {
+  const n = M ? smokeK() : 0; if (!n || x1 - x0 < 2) return;
+  for (let i = 0; i < Math.round(5 + 6 * n); i++) smokeEmit(M, 1, x0 + (x1 - x0) * Math.random(), y - h * .35 + h * .6 * Math.random(), { vy: -26, vx: J() * 16, jit: 12, r: 3.6, grow: 2.8, a: .32, life: 1, lift: 22 });
+}
+function slabDraw(ctx, k, S, hMax, r = 8) {
+  if (!(S.c.x > .02) || !S.y) return;
+  const a = Math.min(S.a.x, S.b.x), b = Math.max(S.a.x, S.b.x), m = (a + b) / 2, w = (b - a) * (.3 + .7 * Math.min(1, S.c.x)), hh = hMax * S.c.x;
+  goo(ctx, k, true, 8); rrect(ctx, m - w / 2, S.y - hh / 2, w, hh, r); ctx.fillStyle = rgb(C.body); ctx.fill(); goo(ctx, k, false);
+}
+function makeSlab() { return { a: spring(0), b: spring(0), c: spring(0), dir: 0, placed: false }; }
+function slabAim(S, a, b) {
+  if (!S.placed || reduced) { S.a.x = S.a.t = a; S.b.x = S.b.t = b; S.a.v = S.b.v = 0; S.placed = true; return; }
+  if (Math.abs(a - S.a.t) + Math.abs(b - S.b.t) > 1) S.dir = (a + b) > (S.a.t + S.b.t) ? 1 : -1;
+  S.a.t = a; S.b.t = b;
+}
+function slabStep(S, dt) {
+  const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub, lead = S.dir > 0 ? S.b : S.a, trail = S.dir > 0 ? S.a : S.b;
+  for (let i = 0; i < sub; i++) {
+    if (!S.dir) { stepS(S.a, h, resp() * .7, Math.max(.45, zeta())); stepS(S.b, h, resp() * .7, Math.max(.45, zeta())); }
+    else { stepS(lead, h, resp() * .6, zeta()); stepS(trail, h, resp() * 1.35, Math.min(1, zeta() + .12)); }
+    stepS(S.c, h, .1, 1);
+  }
+  if (S.dir && Math.abs(S.a.x - S.a.t) + Math.abs(S.b.x - S.b.t) < 1 && Math.abs(S.a.v) + Math.abs(S.b.v) < 8) S.dir = 0;
+}
+/* ================= 弹出列表：卡片 q 弹鼓出来，高亮块在选项之间流（前头先到、后头跟上）；选择框、组合框、自动补全共用 ================= */
+function popList(o) {
+  const H = { top: spring(0), bot: spring(0), c: spring(0), idx: -1, dir: 0 };
+  const bl = makeBloom({ w: o.w, h: o.h(), r: 12, n: 110, M: o.M, el: o.el, center: () => o.center(), base: '', onClosed: o.onClosed });
+  const api = { bl, H };
+  api.setIdx = i => {
+    const its = o.items(), prev = H.idx;
+    if (i >= 0 && its[i]) {
+      H.idx = i;
+      const top = its[i].offsetTop, bot = top + its[i].offsetHeight;
+      if (prev < 0) { H.top.x = top; H.bot.x = bot; H.top.v = H.bot.v = 0; H.dir = 0; }
+      else if (i !== prev) H.dir = i > prev ? 1 : -1;
+      H.top.t = top; H.bot.t = bot; H.c.t = 1;
+    } else { H.idx = -1; H.c.t = 0; }
+    if (o.onIdx) o.onIdx(H.idx);
+  };
+  api.fit = () => { const h = o.h(); if (Math.abs(h - bl.B.h) > 1) bl.resize(o.w, h); };   // 选项变多变少时，卡片跟着变高
+  api.show = () => { api.fit(); bl.show(); };
+  api.hide = () => { bl.hide(); api.setIdx(-1); };
+  api.optionPoint = i => {   // 第 i 个选项此刻在画布上的位置（选中后那滴从这儿流走）
+    const its = o.items(), s = Math.max(0, bl.B.sc.x), [cx, cy] = o.center();
+    return [cx + (-o.w / 2 + 28) * s, cy + (-bl.B.h / 2 + its[i].offsetTop + its[i].offsetHeight / 2) * s];
+  };
+  api.step = dt => {
+    bl.step(dt);
+    const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub, lead = H.dir > 0 ? H.bot : H.top, trail = H.dir > 0 ? H.top : H.bot;
+    for (let i = 0; i < sub; i++) {
+      if (H.dir === 0) { stepS(H.top, h, resp() * .7, Math.max(.5, zeta())); stepS(H.bot, h, resp() * .7, Math.max(.5, zeta())); }
+      else { stepS(lead, h, resp() * .6, zeta()); stepS(trail, h, resp() * 1.3, Math.min(1, zeta() + .15)); }
+      stepS(H.c, h, .1, 1);
+    }
+    o.items().forEach(b => {   // 字的颜色看底色块此刻盖住了谁
+      const mid = b.offsetTop + b.offsetHeight / 2, on = H.c.x > .5 && mid > H.top.x && mid < H.bot.x ? '1' : '';
+      if ((b.dataset.hl || '') !== on) { if (on) b.dataset.hl = '1'; else delete b.dataset.hl; }
+    });
+  };
+  api.draw = (ctx, k) => {
+    bl.draw(ctx, k);
+    const s = bl.B.sc.x; if (H.c.x <= .01 || s <= .5) return;
+    const [cx, cy] = o.center(), W = o.w, Hh = bl.B.h;
+    const y0 = cy + (-Hh / 2 + H.top.x) * s, y1 = cy + (-Hh / 2 + H.bot.x) * s, x0 = cx + (-W / 2 + 4) * s, x1 = cx + (W / 2 - 4) * s;
+    const hh = (y1 - y0) * (.4 + .6 * H.c.x), ym = (y0 + y1) / 2;
+    rrect(ctx, x0, ym - hh / 2, x1 - x0, hh, 8 * s); ctx.fillStyle = rgb(C.hl); ctx.fill();
+  };
+  return api;
+}
+/* ================= 输入框＋弹出列表：组合框（只能从列表里选）、自动补全（随便写，列表只是建议）共用 ================= */
+function comboFx(o) {
+  const { input, list, cv, M, W } = o;
+  let items = [], val = '', closingTimer = 0;
+  const D = makeDrop(5, M); D.s.x = D.s.t = 0;
+  const box = o.box || input, ring = focusRing(input, cv, { r: 9, M, inputs: [input] });
+  const place = () => { const r = box.getBoundingClientRect(), c = cv.cv.getBoundingClientRect(); return [r.left - c.left, r.bottom - c.top + 6]; };
+  const pl = popList({ el: list, w: W, M, items: () => items, h: () => Math.max(1, items.length) * 32 + 8,
+    center: () => { const [l, t] = place(); return [l + W / 2, t + pl.bl.B.h / 2]; },
+    onIdx: i => { if (i >= 0) input.setAttribute('aria-activedescendant', items[i].id); else input.removeAttribute('aria-activedescendant'); } });
+  function render() {
+    const q = input.value.trim(), hits = o.data.filter(d => !q || d.includes(q)).sort((a, b) => (b.startsWith(q) ? 1 : 0) - (a.startsWith(q) ? 1 : 0));
+    list.textContent = ''; items = [];
+    hits.forEach((d, i) => {
+      const el = document.createElement('div'); el.setAttribute('role', 'option'); el.id = `${list.id}-o${i}`; el.setAttribute('aria-selected', String(d === val)); el.dataset.v = d;
+      el.innerHTML = `<span></span><i aria-hidden="true">✓</i>`; el.firstChild.textContent = d;
+      el.addEventListener('pointermove', () => { if (pl.H.idx !== i) pl.setIdx(i); });
+      el.addEventListener('pointerdown', e => e.preventDefault());
+      el.addEventListener('click', () => pick(i));
+      list.appendChild(el); items.push(el);
+    });
+    if (!hits.length) { const el = document.createElement('div'); el.className = 'none'; el.textContent = o.free ? '没有建议，直接用你写的' : '没有找到'; list.appendChild(el); }
+    list.style.width = W + 'px'; list.style.height = (Math.max(1, hits.length) * 32 + 8) + 'px';
+    if (o.ghost) ghost();
+    return hits.length;
+  }
+  function ghost() {   // 自动补全：在输入框里用浅色提示第一个建议的后半截，按 Tab 或 → 收下
+    const q = input.value, top = items[0] && items[0].dataset.v;
+    const rest = q && top && top.startsWith(q) && top !== q && document.activeElement === input ? top.slice(q.length) : '';
+    o.ghost.firstChild.textContent = q; o.ghost.lastChild.textContent = rest; o.ghostRest = rest;
+  }
+  function open() {
+    if (pl.bl.open) return;
+    clearTimeout(closingTimer);
+    const n = render(); pl.show(); input.setAttribute('aria-expanded', 'true');
+    const si = items.findIndex(x => x.dataset.v === val);
+    pl.setIdx(o.free ? -1 : si >= 0 ? si : n ? 0 : -1);
+  }
+  function close() { if (!pl.bl.open) return; pl.hide(); input.setAttribute('aria-expanded', 'false'); if (o.ghost) ghost(); }
+  function pick(i) {
+    const el = items[i]; if (!el) return;
+    const [ox, oy] = pl.optionPoint(i);
+    val = el.dataset.v; input.value = val; close();
+    if (o.onPick) o.onPick(val);
+    const r = input.getBoundingClientRect(), c = cv.cv.getBoundingClientRect();
+    dropTo(D, ox, oy, true); D.s.x = reduced ? 0 : 1; D.s.t = reduced ? 0 : 1; dropTo(D, r.left - c.left + 22, r.top - c.top + r.height / 2);   // 选中的那一项化成一滴，流回输入框
+  }
+  input.addEventListener('input', () => {
+    if (!pl.bl.open) { open(); return; }
+    const n = render(); pl.fit(); pl.setIdx(o.free || !n ? -1 : 0);   // 打字只是筛选，不加戏
+  });
+  input.addEventListener('keydown', e => {
+    const n = items.length, i = pl.H.idx;
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (!pl.bl.open) open(); else if (n) pl.setIdx((i + 1) % n); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); if (!pl.bl.open) open(); else if (n) pl.setIdx(i <= 0 ? n - 1 : i - 1); }
+    else if (e.key === 'Enter') { if (pl.bl.open && i >= 0) { e.preventDefault(); pick(i); } else if (pl.bl.open) { e.preventDefault(); close(); } }
+    else if (e.key === 'Escape') { if (pl.bl.open) { e.preventDefault(); close(); } }
+    else if ((e.key === 'Tab' && !e.shiftKey) || (e.key === 'ArrowRight' && input.selectionStart === input.value.length)) {
+      if (o.ghost && o.ghostRest) { e.preventDefault(); input.value += o.ghostRest; val = input.value; const n2 = render(); pl.fit(); pl.setIdx(-1); if (smokeK()) { const r = input.getBoundingClientRect(), c = cv.cv.getBoundingClientRect(); smokeEmit(M, 2, r.right - c.left - 30, r.top - c.top, { vy: -30, jit: 12, r: 2.4, grow: 3, a: .3, life: .8, lift: 18 }); } }
+      else if (e.key === 'Tab') close();
+    }
+  });
+  input.addEventListener('focus', () => { if (o.ghost) ghost(); });
+  input.addEventListener('blur', () => { closingTimer = setTimeout(close, 80); if (o.ghost) ghost(); });
+  if (o.toggle) {
+    o.toggle.addEventListener('pointerdown', e => e.preventDefault());
+    o.toggle.addEventListener('click', () => { input.focus(); if (pl.bl.open) close(); else open(); });
+  }
+  document.addEventListener('pointerdown', e => { if (pl.bl.open && !o.root.contains(e.target)) close(); });
+  return {
+    step(dt) {
+      pl.step(dt); dropStep(D, dt); ring.step(dt);
+      if (D.s.t === 1 && D.placed && !D.moving && D.popped) D.s.t = 0;   // 流到了就被输入框吸进去
+    },
+    draw(ctx, k) { ring.draw(ctx, k); pl.draw(ctx, k); dropDraw(ctx, k, D); },
+  };
+}
+/* ================= 会变形的卡片：在几个位置、几种大小之间流过去，前头先到、后头跟上（菜单栏、导航菜单共用） ================= */
+function makeCard(M) { return { l: spring(0), r: spring(0), t: spring(0), b: spring(0), s: spring(0), open: false, placed: false, dir: 0, M }; }
+function cardAim(K, l, t, r, b) {
+  if (!K.placed || reduced || !K.open && K.s.x < .02) { K.l.x = K.l.t = l; K.r.x = K.r.t = r; K.t.x = K.t.t = t; K.b.x = K.b.t = b; K.l.v = K.r.v = K.t.v = K.b.v = 0; K.placed = true; K.dir = 0; return; }
+  const c0 = K.l.t + K.r.t, c1 = l + r;
+  if (Math.abs(c1 - c0) > 2) K.dir = c1 > c0 ? 1 : -1;
+  K.l.t = l; K.r.t = r; K.t.t = t; K.b.t = b;
+}
+function cardShow(K) {
+  if (K.open) return; K.open = true;
+  if (!reduced) { K.s.x = Math.max(K.s.x, .35); K.s.v = 0; } K.s.t = 1;
+  const n = smokeK(); if (!n || !K.M) return;
+  const cx = (K.l.t + K.r.t) / 2, cy = (K.t.t + K.b.t) / 2, w = K.r.t - K.l.t, h = K.b.t - K.t.t;
+  for (let i = 0; i < Math.round(10 + 10 * n); i++) { const a = Math.random() * TAU; smokeEmit(K.M, 1, cx + Math.cos(a) * w * .42, cy + Math.sin(a) * h * .42, { vx: Math.cos(a) * 60, vy: Math.sin(a) * 40, r: 4, grow: 2.6, a: .3, life: .75, lift: 8 }); }
+}
+function cardHide(K) {
+  if (!K.open) return; K.open = false; K.s.t = 0; if (reduced) K.s.x = 0;
+  const n = smokeK(); if (!n || !K.M) return;
+  const w = K.r.x - K.l.x, h = K.b.x - K.t.x;
+  for (let i = 0; i < Math.round(6 + 6 * n); i++) smokeEmit(K.M, 1, K.l.x + w * Math.random(), K.t.x + h * Math.random() * .6, { vy: -24, jit: 14, r: 4.5, grow: 2.6, a: .32, life: 1, lift: 22 });
+}
+// 跑起来的东西往身后喷一点（排气管）：位置、速度，跑得越快喷得越多
+function trailPuffs(M, dt, x, y, vx, vy, k = 1, col) {
+  const sp = Math.hypot(vx, vy), n = M ? smokeK() : 0; if (!n || sp < 150) return;
+  M.acc += sp * .012 * n * k * dt;
+  while (M.acc >= 1) { M.acc -= 1; smokeEmit(M, 1, x, y, { vx: -vx * .12, vy: -vy * .12 - 6, jit: 12, r: 2.2, grow: 3.2, a: .28, life: .8, lift: 6, col }); }
+}
+function cardStep(K, dt) {
+  const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub, lead = K.dir > 0 ? K.r : K.l, trail = K.dir > 0 ? K.l : K.r;
+  for (let i = 0; i < sub; i++) {
+    if (!K.dir) { stepS(K.l, h, resp() * .75, Math.max(.45, zeta())); stepS(K.r, h, resp() * .75, Math.max(.45, zeta())); }
+    else { stepS(lead, h, resp() * .65, zeta()); stepS(trail, h, resp() * 1.4, Math.min(1, zeta() + .12)); }
+    stepS(K.t, h, resp() * .8, Math.max(.45, zeta())); stepS(K.b, h, resp() * .8, Math.max(.45, zeta()));
+    if (K.open) stepS(K.s, h, .28 + (1 - F.speed) * .12, reduced ? 1 : Math.max(.28, .55 - F.bounce * .35)); else stepS(K.s, h, .15, 1);
+  }
+  if (K.s.x < 0) { K.s.x = 0; K.s.v = 0; }
+  if (K.dir && Math.abs(K.l.x - K.l.t) + Math.abs(K.r.x - K.r.t) < 1 && Math.abs(K.l.v) + Math.abs(K.r.v) < 8) K.dir = 0;
+  if (K.open && K.s.x > .6 && K.dir) { const tr = K.dir > 0 ? K.l : K.r; trailPuffs(K.M, dt, tr.x, K.t.x + (K.b.x - K.t.x) * (.3 + Math.random() * .5), tr.v, 0, .8); }   // 流过去的时候，后头那边往身后喷
+}
+function cardRect(K) { const s = Math.max(0, K.s.x), cx = (K.l.x + K.r.x) / 2, cy = (K.t.x + K.b.x) / 2, w = Math.max(4, K.r.x - K.l.x) * s, h = Math.max(4, K.b.x - K.t.x) * s; return [cx - w / 2, cy - h / 2, w, h, s]; }
+function cardDraw(ctx, k, K, r = 12, col, stroke) { const [x, y, w, h, s] = cardRect(K); if (s < .02) return; goo(ctx, k, true, 10, col); rrect(ctx, x, y, w, h, r * s); ctx.fillStyle = rgb(col || C.body); ctx.fill(); goo(ctx, k, false); if (stroke) { ctx.lineWidth = 1.5; ctx.strokeStyle = stroke; ctx.stroke(); } }
+// 让卡片里的字跟着卡片走：卡片还在半路时字也在半路，离得远就先淡着
+function cardRide(K, el) {
+  const [x, y, w, h, s] = cardRect(K), tx = (K.l.t + K.r.t) / 2, ty = (K.t.t + K.b.t) / 2;
+  const dx = x + w / 2 - tx, dy = y + h / 2 - ty, far = (Math.abs(K.l.x - K.l.t) + Math.abs(K.r.x - K.r.t) + Math.abs(K.b.x - K.b.t)) / 40;
+  el.style.transform = `translate(${dx.toFixed(1)}px,${dy.toFixed(1)}px) scale(${s.toFixed(4)})`;
+  el.style.opacity = (clamp((s - .6) / .3, 0, 1) * clamp(1 - far, 0, 1)).toFixed(3);
+}
+
+/* ================= 输入框、选择框的“框”：水流 =================
+   鼠标停在框上不点：手底下那一小段边框被浸湿、变成实心，水珠从那儿顺着边框往两边慢慢流开，顶上一直慢慢冒小云（跟最早的按钮一样）。
+   点进去：原来的边框化开，一圈实心线从左上角顺着框边流一圈。
+   一直打字：框上的水跟着流起来，打得越快流得越快、水珠越鼓；停下来慢慢停住、缩回线里。
+   visibleOnly：按钮这类只在键盘聚焦时才画整圈 */
+function focusRing(el, cv, o = {}) {
+  const R = { p: spring(0), wet: spring(0), on: false, hov: false, down: false, cx: 0, cy: 0, A: 0, phase: 0, idle: .3, run: 0, runners: [], s0: 0, g: null };
+  const tgt = o.target || el, r0 = o.r ?? 9, M = o.M, col = () => (o.col && o.col()) || C.body;   // col：水的颜色（颜色输入里是选中的颜色）
+  const set = on => { R.on = on; R.p.t = on ? 1 : 0; if (reduced) R.p.x = R.p.t; };
+  tgt.addEventListener('focusin', () => set(o.visibleOnly ? !!(tgt.matches(':focus-visible') || tgt.querySelector(':focus-visible')) : true));
+  tgt.addEventListener('focusout', e => { if (!tgt.contains(e.relatedTarget)) set(false); });
+  el.addEventListener('pointerenter', e => { R.hov = e.pointerType !== 'touch'; R.cx = e.clientX; R.cy = e.clientY; });
+  el.addEventListener('pointermove', e => { R.cx = e.clientX; R.cy = e.clientY; });
+  el.addEventListener('pointerleave', () => { R.hov = false; R.down = false; });
+  el.addEventListener('pointerdown', () => { R.down = true; }); el.addEventListener('pointerup', () => { R.down = false; });
+  for (const inp of o.inputs || []) inp.addEventListener('input', () => { R.A = Math.min(1, R.A + .28); });
+  R.bump = () => { R.A = Math.min(1, R.A + .28); };   // 不是 input 元素的（比如日期的分段）自己喊一声
+  const geo = () => {
+    const r = el.getBoundingClientRect(), c = cv.cv.getBoundingClientRect(); if (r.width < 2) return null;
+    const x = r.left - c.left, y = r.top - c.top, w = r.width, h = r.height, rad = Math.min(r0, h / 2);
+    return { x, y, w, h, rad, per: 2 * (w + h) - (8 - 2 * Math.PI) * rad };
+  };
+  const at = (g, s) => { s = ((s % g.per) + g.per) % g.per; const [px, py, nx, ny] = rrAt(s, g.w, g.h, g.rad); return [g.x + px, g.y + py, nx, ny]; };
+  const nearest = (g, X, Y) => { let best = 0, bd = 1e9; for (let i = 0; i < 72; i++) { const s = g.per * i / 72, [px, py] = at(g, s), d = (px - X) ** 2 + (py - Y) ** 2; if (d < bd) { bd = d; best = s; } } return best; };
+  R.step = dt => {
+    const g = R.g = geo(); if (!g) return;
+    const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub, hovering = R.hov && !R.down && !reduced;
+    R.wet.t = hovering ? 1 : 0;
+    for (let i = 0; i < sub; i++) { stepS(R.p, h, R.on ? .3 + (1 - F.speed) * .15 : .14, R.on ? Math.max(.55, zeta()) : 1); stepS(R.wet, h, hovering ? .5 : .3, 1); }
+    if (reduced) R.p.x = R.p.t;
+    R.A *= Math.exp(-dt / 1.1);
+    R.phase += (30 + 320 * R.A) * dt;
+    if (hovering) {
+      const c = cv.cv.getBoundingClientRect(); R.s0 = nearest(g, R.cx - c.left, R.cy - c.top);
+      R.run -= dt; if (R.run <= 0) { R.run = .55 + Math.random() * .35; for (const dir of [-1, 1]) R.runners.push({ s: R.s0, dir, t: 0, life: 1.3 + Math.random() * .5, m: .7 + Math.random() * .5 }); }
+      const n = M ? smokeK() : 0;
+      if (n) { R.idle -= dt; if (R.idle <= 0) { R.idle = (.5 + Math.random() * .6) / (.45 + n); const [px, py] = at(g, R.s0); cloudlet(M, px, Math.min(py, g.y) - 2, { r: 2.3, grow: 3.4, a: .27, life: 1.5, lift: 15, vy: -14, col: o.col && o.col() }); } }
+    }
+    for (let i = R.runners.length - 1; i >= 0; i--) { const q = R.runners[i]; q.t += dt; q.s += q.dir * (34 + 16 * F.speed) * dt; if (q.t > q.life) R.runners.splice(i, 1); }
+  };
+  const seg = (ctx, g, from, len, wdt) => {   // 沿着框边画一段：从 from 往后 len 那么长
+    if (len < .5) return; ctx.beginPath(); rrect(ctx, g.x, g.y, g.w, g.h, g.rad); ctx.setLineDash([len, g.per]); ctx.lineDashOffset = -(((from % g.per) + g.per) % g.per); ctx.lineWidth = wdt; ctx.stroke();
+    ctx.setLineDash([]); ctx.lineDashOffset = 0;
+    if (((from % g.per) + g.per) % g.per + len > g.per) { ctx.beginPath(); rrect(ctx, g.x, g.y, g.w, g.h, g.rad); ctx.setLineDash([((from % g.per) + g.per) % g.per + len - g.per, g.per]); ctx.lineWidth = wdt; ctx.stroke(); ctx.setLineDash([]); }
+  };
+  R.draw = (ctx, k) => {
+    const g = R.g; if (!g) return;
+    const p = clamp(R.p.x, 0, 1), wet = clamp(R.wet.x, 0, 1);
+    if (p < .01 && wet < .01 && !R.runners.length) return;
+    const cc = col(); ctx.save(); ctx.strokeStyle = ctx.fillStyle = rgb(cc); goo(ctx, k, true, 5, cc);
+    if (p > .01) seg(ctx, g, 0, g.per * p, 2);                                   // 焦点：一圈实心线流过去
+    if (wet > .01) seg(ctx, g, R.s0 - 26 * wet, 52 * wet, 2);                     // 手底下浸湿的那一段
+    for (const q of R.runners) {                                                  // 从手底下往两边流开的水珠，身后拖一根越来越细的线
+      const u = q.t / q.life, sz = Math.sin(Math.PI * Math.min(1, u * 1.2)) * q.m * (.6 + F.smoke * .7);
+      if (sz < .05) continue;
+      const a = q.dir > 0 ? R.s0 : q.s, len = Math.abs(q.s - R.s0); seg(ctx, g, a, len, 1.6 * (1 - u));
+      const [px, py, nx, ny] = at(g, q.s); ctx.beginPath(); ctx.ellipse(px, py, 1.4 + 2.4 * sz, 1 + 1.6 * sz, Math.atan2(nx, -ny), 0, TAU); ctx.fill();
+    }
+    if (p > .5 && R.A > .03) {                                                    // 一直打字：一圈上的水跟着流
+      const N = 5;
+      for (let i = 0; i < N; i++) {
+        const s = R.phase * (1 + i * .07) + i * g.per / N, bump = R.A * (1.3 + 1.6 * Math.sin(i * 2.1 + R.phase * .03) ** 2) * (.6 + F.smoke * .7);
+        const [px, py, nx, ny] = at(g, s); ctx.beginPath(); ctx.ellipse(px, py, 1 + bump * 1.9, 1 + bump, Math.atan2(nx, -ny), 0, TAU); ctx.fill();
+      }
+    }
+    goo(ctx, k, false); ctx.restore();
+  };
+  return R;
+}
+/* ================= 日期公用 ================= */
+const WKD = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+const sameDay = (a, b) => !!a && !!b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+const dayOnly = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const TODAY = dayOnly(new Date());
+const pad2 = n => String(n).padStart(2, '0');
+// 分段输入（年／月／日、时／分）：方向键上下改数、直接打数字、左右键换格；正在改的那一格底下是一块实心，换格时流过去；整个框用“水流”的框
+function segField(o) {
+  const { box, cv, M } = o, segs = o.segs.map(s => ({ ...s, pop: spring(1) }));
+  const S = makeSlab(); let cur = -1, buf = '', bufT = 0;
+  const ring = focusRing(box, cv, { r: 10, M });
+  const max = s => typeof s.max === 'function' ? s.max(segs) : s.max;
+  function show(s) {
+    const v = s.val, empty = v === null || v === undefined;
+    s.el.textContent = empty ? s.ph : (s.fmt ? s.fmt(v) : (s.pad ? String(v).padStart(s.pad, '0') : String(v)));
+    if (empty) { s.el.dataset.empty = '1'; s.el.removeAttribute('aria-valuenow'); s.el.setAttribute('aria-valuetext', '空'); }
+    else { delete s.el.dataset.empty; s.el.setAttribute('aria-valuenow', String(v)); s.el.setAttribute('aria-valuetext', s.fmt ? s.fmt(v) : String(v)); }
+    s.el.setAttribute('aria-valuemin', String(s.min)); s.el.setAttribute('aria-valuemax', String(max(s)));
+  }
+  function set(s, v, quiet) {
+    if (v !== null) v = clamp(v, s.min, max(s));
+    if (v === s.val) return;
+    s.val = v; show(s); if (!quiet && !reduced) { s.pop.x = .86; s.pop.v = 0; }
+    for (const t of segs) if (t !== s && typeof t.max === 'function' && t.val !== null && t.val > max(t)) { t.val = max(t); show(t); }   // 换了月份，日子跟着收一收
+    if (o.onChange) o.onChange(segs);
+  }
+  segs.forEach((s, i) => {
+    s.el.setAttribute('role', 'spinbutton'); s.el.tabIndex = 0; s.el.setAttribute('aria-label', s.label); show(s);
+    s.el.addEventListener('focus', () => { cur = i; buf = ''; });
+    s.el.addEventListener('blur', () => { if (cur === i) cur = -1; });
+    s.el.addEventListener('keydown', e => {
+      const k = e.key;
+      if (k === 'ArrowUp' || k === 'ArrowDown') {
+        e.preventDefault(); const m = max(s), d = k === 'ArrowUp' ? 1 : -1;
+        const v = s.val === null ? (s.now ?? s.min) : s.val + d; set(s, v > m ? s.min : v < s.min ? m : v, e.repeat); ring.bump(); buf = '';
+      } else if (k === 'ArrowRight' && i < segs.length - 1) { e.preventDefault(); segs[i + 1].el.focus(); }
+      else if (k === 'ArrowLeft' && i > 0) { e.preventDefault(); segs[i - 1].el.focus(); }
+      else if (k === 'Backspace' || k === 'Delete') { e.preventDefault(); buf = ''; set(s, null, true); ring.bump(); }
+      else if (/^[0-9]$/.test(k)) {
+        e.preventDefault(); const now = performance.now(); if (now - bufT > 1200) buf = ''; bufT = now;
+        buf += k; let v = +buf; const m = max(s);
+        if (v > m) { buf = k; v = +k; }
+        set(s, Math.max(s.min, v), true); ring.bump();
+        if (+buf * 10 > m || buf.length >= String(m).length) { buf = ''; if (i < segs.length - 1) segs[i + 1].el.focus(); }   // 再多打一位就超了：跳到下一格
+      }
+    });
+    s.el.addEventListener('pointerdown', e => { e.preventDefault(); s.el.focus(); });
+  });
+  return {
+    segs, ring,
+    setAll(vals, pop) { segs.forEach((s, i) => { s.val = vals[i]; show(s); if (pop && !reduced) { s.pop.x = .8 - i * .03; s.pop.v = 0; } }); if (o.onChange) o.onChange(segs); },
+    step(dt) {
+      ring.step(dt);
+      const c = cv.cv.getBoundingClientRect();
+      if (cur >= 0) { const r = segs[cur].el.getBoundingClientRect(); slabAim(S, r.left - c.left, r.right - c.left); S.y = r.top - c.top + r.height / 2; S.h = r.height; S.c.t = 1; } else S.c.t = 0;
+      slabStep(S, dt); if (S.dir && S.y) { const tr = S.dir > 0 ? S.a : S.b; trailPuffs(M, dt, tr.x, S.y, tr.v, 0, .6); }
+      const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub;
+      for (const s of segs) { for (let i = 0; i < sub; i++) stepS(s.pop, h, .2, Math.max(.25, zeta() * .6)); const sc = reduced ? 1 : s.pop.x; s.el.style.transform = Math.abs(sc - 1) > .002 ? `scale(${sc.toFixed(4)})` : ''; }
+    },
+    draw(ctx, k) {
+      ring.draw(ctx, k);
+      if (S.c.x > .02 && S.h) { const a = Math.min(S.a.x, S.b.x), b = Math.max(S.a.x, S.b.x), hh = S.h * (.5 + .5 * S.c.x) * clamp(Math.sqrt(S.h * 1.6 / Math.max(1, b - a)), .7, 1); goo(ctx, k, true, 7); rrect(ctx, a, S.y - hh / 2, b - a, hh, 6); ctx.fillStyle = rgb(C.body); ctx.fill(); goo(ctx, k, false); }
+    },
+  };
+}
+const dateSegs = (els, d, now = TODAY) => [
+  { el: els[0], label: '年', ph: '年', min: 1900, max: 2100, val: d ? d.getFullYear() : null, now: now.getFullYear() },
+  { el: els[1], label: '月', ph: '月', min: 1, max: 12, pad: 2, val: d ? d.getMonth() + 1 : null, now: now.getMonth() + 1 },
+  { el: els[2], label: '日', ph: '日', min: 1, val: d ? d.getDate() : null, now: now.getDate(), max: ss => { const y = ss[0].val ?? now.getFullYear(), m = ss[1].val ?? 1; return new Date(y, m, 0).getDate(); } },
+];
+const segDate = ss => ss[0].val !== null && ss[1].val !== null && ss[2].val !== null ? new Date(ss[0].val, ss[1].val - 1, ss[2].val) : null;
+// 月历：表头、上下月、一格一格的日子；方向键在日子之间走，走出这个月就翻过去
+function makeMonthGrid(o) {
+  const root = o.root; let view = new Date((o.view || TODAY).getFullYear(), (o.view || TODAY).getMonth(), 1), btns = [], focusD = null;
+  root.classList.add('mg');
+  root.innerHTML = `<div class="mghead"><button type="button" class="mgnav" data-d="-1" aria-label="上个月">‹</button><h3 class="mgtitle" aria-live="polite"></h3><button type="button" class="mgnav" data-d="1" aria-label="下个月">›</button></div><table class="mggrid" role="grid"><thead><tr>${['日', '一', '二', '三', '四', '五', '六'].map((d, i) => `<th scope="col" abbr="${WKD[i]}">${d}</th>`).join('')}</tr></thead><tbody></tbody></table>`;
+  const title = root.querySelector('.mgtitle'), body = root.querySelector('tbody'), table = root.querySelector('table');
+  title.id = (root.id || 'mg' + Math.random().toString(36).slice(2, 7)) + '-t'; table.setAttribute('aria-labelledby', title.id);
+  const inView = d => d && d.getFullYear() === view.getFullYear() && d.getMonth() === view.getMonth();
+  function render() {
+    title.textContent = `${view.getFullYear()}年${view.getMonth() + 1}月`;
+    body.textContent = ''; btns = [];
+    const first = view.getDay(), days = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+    let tr = null;
+    for (let i = 0; i < 42; i++) {
+      if (i % 7 === 0) { tr = document.createElement('tr'); body.appendChild(tr); }
+      const td = document.createElement('td'), d = i - first + 1; td.setAttribute('role', 'gridcell');
+      if (d >= 1 && d <= days) {
+        const date = new Date(view.getFullYear(), view.getMonth(), d), b = document.createElement('button');
+        b.type = 'button'; b.textContent = d; b.tabIndex = -1; b.dataset.d = d;
+        b.dataset.base = `${view.getFullYear()}年${view.getMonth() + 1}月${d}日，${WKD[date.getDay()]}${sameDay(date, TODAY) ? '，今天' : ''}`;
+        if (sameDay(date, TODAY)) { b.dataset.today = '1'; b.setAttribute('aria-current', 'date'); }
+        b.addEventListener('click', () => { focusD = date; o.onPick(date); });
+        b.addEventListener('pointerenter', () => { if (o.onHover) o.onHover(date); });
+        td.appendChild(b); btns[d - 1] = b;
+      }
+      tr.appendChild(td);
+    }
+    if (!inView(focusD)) focusD = o.focusOf ? (o.focusOf() && inView(o.focusOf()) ? o.focusOf() : new Date(view)) : new Date(view);
+    btns[focusD.getDate() - 1].tabIndex = 0;
+    if (o.onRender) o.onRender();
+  }
+  function go(nd, focus) {
+    focusD = nd;
+    if (!inView(nd)) { view = new Date(nd.getFullYear(), nd.getMonth(), 1); render(); }
+    btns.forEach(b => { b.tabIndex = +b.dataset.d === nd.getDate() ? 0 : -1; });
+    if (focus) btns[nd.getDate() - 1].focus();
+  }
+  body.addEventListener('keydown', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const d = new Date(view.getFullYear(), view.getMonth(), +b.dataset.d);
+    const st = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+    let nd = null;
+    if (st !== undefined) nd = new Date(d.getFullYear(), d.getMonth(), d.getDate() + st);
+    else if (e.key === 'Home') nd = new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay());
+    else if (e.key === 'End') nd = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 6 - d.getDay());
+    else if (e.key === 'PageUp' || e.key === 'PageDown') { const m = d.getMonth() + (e.key === 'PageUp' ? -1 : 1) * (e.shiftKey ? 12 : 1); nd = new Date(d.getFullYear(), m, Math.min(d.getDate(), new Date(d.getFullYear(), m + 1, 0).getDate())); }
+    if (!nd) return;
+    e.preventDefault(); go(nd, true); if (o.onHover) o.onHover(nd);
+  });
+  root.querySelectorAll('.mgnav').forEach(b => b.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() + +b.dataset.d, 1); focusD = null; render(); }));
+  render();
+  return {
+    root, cells: () => btns, render,
+    get view() { return view; },
+    indexOf: d => inView(d) ? d.getDate() - 1 : (d && d < view ? -1 : d ? 99 : NaN),
+    dateAt: i => new Date(view.getFullYear(), view.getMonth(), i + 1),
+    show(d) { if (d && !inView(d)) { view = new Date(d.getFullYear(), d.getMonth(), 1); focusD = d; render(); } },
+    focus() { const b = btns.find(x => x.tabIndex === 0) || btns[0]; b.focus(); },
+  };
+}
+// 月份／年份格子：3 列 4 行，上下翻一年／十二年
+function makeTileGrid(o) {
+  const root = o.root, kind = o.kind; let base = o.base, focusV = o.focusV ?? null, btns = [];
+  root.innerHTML = `<div class="mghead"><button type="button" class="mgnav" data-d="-1" aria-label="${kind === 'month' ? '上一年' : '往前 12 年'}">‹</button><h3 class="mgtitle" aria-live="polite"></h3><button type="button" class="mgnav" data-d="1" aria-label="${kind === 'month' ? '下一年' : '往后 12 年'}">›</button></div><div class="tg3" role="grid"></div>`;
+  const title = root.querySelector('.mgtitle'), grid = root.querySelector('.tg3');
+  title.id = (root.id || 'tg' + Math.random().toString(36).slice(2, 7)) + '-t'; grid.setAttribute('aria-labelledby', title.id);
+  const valOf = i => kind === 'month' ? base * 12 + i : base + i;   // 月份记成 年×12+月，年份就是年
+  const labelOf = v => kind === 'month' ? `${Math.floor(v / 12)}年${v % 12 + 1}月` : `${v}年`;
+  function render() {
+    title.textContent = kind === 'month' ? `${base}年` : `${base} – ${base + 11}`;
+    grid.textContent = ''; btns = [];
+    for (let i = 0; i < 12; i++) {
+      const b = document.createElement('button'), v = valOf(i);
+      b.type = 'button'; b.setAttribute('role', 'gridcell'); b.textContent = kind === 'month' ? `${i + 1}月` : String(v); b.tabIndex = -1; b.dataset.v = v; b.dataset.base = labelOf(v);
+      b.addEventListener('click', () => { focusV = v; o.onPick(v); });
+      b.addEventListener('pointerenter', () => { if (o.onHover) o.onHover(v); });
+      grid.appendChild(b); btns.push(b);
+    }
+    const fi = focusV !== null && focusV >= valOf(0) && focusV <= valOf(11) ? focusV - valOf(0) : 0; btns[fi].tabIndex = 0;
+    if (o.onRender) o.onRender();
+  }
+  function go(v, focus) {
+    if (v < valOf(0) || v > valOf(11)) { base += v < valOf(0) ? (kind === 'month' ? -1 : -12) : (kind === 'month' ? 1 : 12); render(); }
+    focusV = v; btns.forEach(b => { b.tabIndex = +b.dataset.v === v ? 0 : -1; }); const b = btns.find(x => +x.dataset.v === v); if (focus && b) b.focus();
+  }
+  grid.addEventListener('keydown', e => {
+    const b = e.target.closest('button'); if (!b) return; const v = +b.dataset.v;
+    const st = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -3, ArrowDown: 3, PageUp: kind === 'month' ? -12 : -12, PageDown: 12 }[e.key];
+    if (st === undefined) return; e.preventDefault(); go(v + st, true); if (o.onHover) o.onHover(v + st);
+  });
+  root.querySelectorAll('.mgnav').forEach(b => b.addEventListener('click', () => { base += +b.dataset.d * (kind === 'month' ? 1 : 12); render(); }));
+  render();
+  return { cells: () => btns, render, labelOf, indexOf: v => v === null ? NaN : v < valOf(0) ? -1 : v > valOf(11) ? 99 : v - valOf(0), get base() { return base; } };
+}
+// 格子上的选中效果。单选：一滴（宽格子是一块）实心，换格子时整滴流过去，原来那格冒一小团；
+// 范围：起点凝成一滴；还在挑终点时，一条细一点的水舌跟着鼠标往前伸、往回缩；点了终点，水舌胀成一整条，两头鼓成水滴，表面晃一晃再停
+function gridFx(o) {
+  const ink = () => o.ink === 'bg' ? C.hl : C.body;   // 卡片里：跟着卡片的样子换（实心卡上是底色，浅色卡上是实心）
+  const D = makeDrop(o.R || 16, o.M); D.s.x = D.s.t = 0;
+  const K = makeCard(o.M);
+  const G = { mode: 'none', lo: NaN, hi: NaN, hiIn: false, loIn: false, P: spring(0), Th: spring(0), wob: 0, t: 0, cells: [], key: '', sel: -1 };
+  const rectOf = el => { const r = el.getBoundingClientRect(), c = o.cv.cv.getBoundingClientRect(); return { x: r.left - c.left, y: r.top - c.top, w: r.width, h: r.height, cx: r.left - c.left + r.width / 2, cy: r.top - c.top + r.height / 2 }; };
+  G.single = i => {
+    const cs = o.cells(), prev = G.sel; G.sel = i;
+    if (!(i >= 0) || !cs[i]) { D.s.t = 0; if (o.wide) cardHide(K); return; }
+    const r = rectOf(cs[i]), n = o.M ? smokeK() : 0;
+    if (n && prev >= 0 && prev !== i && cs[prev]) { const q = rectOf(cs[prev]); smokeEmit(o.M, 2 + Math.round(2 * n), q.cx, q.cy - q.h * .3, { vy: -30, jit: 16, spread: q.w * .25, r: 2.8, grow: 3.2, a: .3, life: .9, lift: 18 }); }   // 离开的那格冒一小团
+    G.anc = { x: r.cx, y: r.cy };
+    if (o.wide) { cardAim(K, r.x + 2, r.y + 2, r.x + r.w - 2, r.y + r.h - 2); if (!K.shown) { K.shown = true; K.open = true; K.s.x = K.s.t = 1; } else cardShow(K); return; }   // 第一次（页面刚打开）直接放好，不冒烟
+    if (D.s.x < .05) { dropTo(D, r.cx, r.cy, true); if (!reduced) { D.s.x = .3; D.s.v = 0; } } else dropTo(D, r.cx, r.cy);
+    D.s.t = 1;
+  };
+  // lo：起点（格子序号，-1 表示在这一页前面）；hi：终点或鼠标所在格（99 表示在后面）；picking：还在挑终点
+  G.range = (lo, hi, a, hov) => {
+    let mode = 'none', L = NaN, H = NaN;
+    if (a === a) { mode = 'pick'; L = a; H = hov === hov ? hov : a; }
+    else if (lo === lo && hi === hi) { mode = 'done'; L = lo; H = hi; }
+    const key = mode + L;
+    if (mode !== 'none' && (key !== G.key || G.mode === 'none')) { if (mode === 'pick' || G.mode === 'none' || G.L !== L) { G.P.x = 0; G.P.v = 0; } if (G.mode === 'none') { G.Th.x = 0; } }
+    G.key = key; G.mode = mode; G.L = L; G.H = H;
+  };
+  G.step = dt => {
+    dropStep(D, dt); cardStep(K, dt); G.t += dt;
+    const cs = o.cells(); G.cells = cs.map(rectOf);
+    const sr = G.sel >= 0 && G.cells[G.sel];
+    if (sr && G.anc) {   // 格子自己挪了（弹层缩放、翻页、滚动）：那滴跟着格子一起走，不算流动
+      const dx = sr.cx - G.anc.x, dy = sr.cy - G.anc.y;
+      if (Math.abs(dx) + Math.abs(dy) > .01) {
+        for (const a of [D.hx, D.tx]) { a.x += dx; a.t += dx; } for (const a of [D.hy, D.ty]) { a.x += dy; a.t += dy; }
+        for (const a of [K.l, K.r]) { a.x += dx; a.t += dx; } for (const a of [K.t, K.b]) { a.x += dy; a.t += dy; }
+        G.anc = { x: sr.cx, y: sr.cy };
+      }
+    }
+    const n = G.cells.length, sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub;
+    if (G.mode !== 'none') {
+      const L = clamp(G.L, -.5, n - .5), Hh = clamp(G.H, -.5, n - .5);
+      G.P.t = Hh - L; G.Th.t = G.mode === 'pick' ? .26 : .38;
+    } else G.Th.t = 0;
+    for (let i = 0; i < sub; i++) { stepS(G.P, h, resp() * (G.mode === 'pick' ? 1 : 1.5), Math.max(.5, zeta() + .15)); stepS(G.Th, h, .3, Math.min(1, zeta() + .2)); }
+    if (reduced) { G.P.x = G.P.t; G.Th.x = G.Th.t; }
+    G.wob = G.wob * Math.exp(-dt / .6) + Math.min(1, Math.abs(G.P.v) * .08 + Math.abs(G.Th.v) * .8) * (1 - Math.exp(-dt / .08));
+    if (G.mode !== 'none' && G.cells.length) {   // 水头跑得快，往身后喷一点
+      const head = G.L + G.P.x, i = clamp(Math.round(head), 0, n - 1), r = G.cells[i];
+      if (r) trailPuffs(o.M, dt, r.cx, r.cy - r.h * .3, Math.sign(G.P.v) * Math.min(600, Math.abs(G.P.v) * r.w), 0, .7);
+    }
+    const lo = Math.min(G.L, G.L + G.P.x), hi = Math.max(G.L, G.L + G.P.x);
+    const here = sr && (o.wide ? K.s.x > .5 : D.s.x > .45 && Math.hypot(D.hx.x - sr.cx, D.hy.x - sr.cy) < sr.w * .4);   // 那滴到了，字才反色
+    cs.forEach((b, i) => { const on = (G.mode !== 'none' && G.Th.x > .12 && i >= lo - .3 && i <= hi + .3) || (here && i === G.sel) ? '1' : ''; if ((b.dataset.on || '') !== on) { if (on) b.dataset.on = on; else delete b.dataset.on; } });
+  };
+  // 某个小数位置（格子序号）在画布上的点；跨行时先流到这一行的右边，再从下一行的左边出来
+  function pos(f) {
+    const cs = G.cells, n = cs.length; f = clamp(f, 0, n - 1);
+    const i = Math.floor(f), u = f - i, a = cs[i], b = cs[Math.min(n - 1, i + 1)];
+    if (!b || b === a || u === 0) return { x: a.cx, cy: a.cy, row: a.cy, h: a.h, r: a };
+    if (Math.abs(a.cy - b.cy) < 4) return { x: a.cx + (b.cx - a.cx) * u, cy: a.cy, row: a.cy, h: a.h, r: a };
+    return u < .5 ? { x: a.cx + (a.x + a.w - a.cx) * u * 2, cy: a.cy, row: a.cy, h: a.h, r: a } : { x: b.x + (b.cx - b.x) * (u - .5) * 2, cy: b.cy, row: b.cy, h: b.h, r: b };
+  }
+  // 表面晃多大跟着手感走：默认只是轻轻一层波纹，弹性、扭曲调高了才晃得夸张
+  const ampK = () => clamp((F.bounce - .2) * (.3 + deformK()) * .45, 0, .32);
+  function tube(ctx, x0, x1, cy, r, seed) {   // 一条水管：一串圆挨着画，表面按位置和时间起伏，软边把它们连成一整条
+    const n = Math.max(2, Math.ceil(Math.abs(x1 - x0) / 3)), w = G.wob * ampK() / .46, t = G.t;
+    ctx.beginPath();
+    for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, rr = Math.max(.6, r * (1 + w * (Math.sin(x * .085 + t * 6 + seed) * .32 + Math.sin(x * .21 - t * 3.7) * .14))); ctx.moveTo(x + rr, cy); ctx.arc(x, cy, rr, 0, TAU); }
+    ctx.fill();
+  }
+  G.draw = (ctx, k) => {
+    const col = ink(); ctx.fillStyle = rgb(col);
+    const cs = G.cells, n = cs.length;
+    if (n && G.Th.x > .01 && G.mode !== 'none') {
+      const a = G.L, b = G.L + G.P.x, lo = Math.min(a, b), hi = Math.max(a, b), th = G.Th.x;
+      goo(ctx, k, true, 8, col);
+      const A = pos(clamp(lo, 0, n - 1)), B = pos(clamp(hi, 0, n - 1));
+      // 按行切：起点那行从 A 到行尾，中间每行整行，终点那行从行头到 B
+      const rowsY = []; for (const c of cs) if (!rowsY.some(y => Math.abs(y - c.cy) < 4)) rowsY.push(c.cy);
+      for (const y of rowsY) {
+        if (y < A.row - 4 || y > B.row + 4) continue;
+        const inRow = cs.filter(c => Math.abs(c.cy - y) < 4), first = inRow[0], last = inRow[inRow.length - 1];
+        const x0 = Math.abs(y - A.row) < 4 ? (lo < 0 ? first.x : A.x) : first.x + 4, x1 = Math.abs(y - B.row) < 4 ? (hi > n - 1 ? last.x + last.w : B.x) : last.x + last.w - 4;
+        if (x1 - x0 > .5 || Math.abs(y - A.row) < 4) tube(ctx, x0, Math.max(x0, x1), y, first.h * Math.min(th, .42), y * .05);   // 再怎么晃也不比这一行粗
+      }
+      const capR = (r, big) => { if (o.wide) { const ins = big ? 2 : 6; rrect(ctx, r.x + ins, r.y + ins, r.w - ins * 2, r.h - ins * 2, 10); ctx.fill(); } else { ctx.beginPath(); ctx.arc(r.cx, r.cy, (o.R || 16) * (big ? 1 : .8), 0, TAU); ctx.fill(); } };
+      if (G.L >= 0 && G.L <= n - 1) capR(cs[Math.round(G.L)], true);                      // 起点：一滴
+      if (G.mode === 'done' && G.H >= 0 && G.H <= n - 1 && Math.abs(G.P.x - G.P.t) < .6) capR(cs[Math.round(G.H)], true);   // 终点灌到了才鼓起来
+      if (G.mode === 'pick' || Math.abs(G.P.x - G.P.t) > .05) { const hd = pos(clamp(b, 0, n - 1)); ctx.beginPath(); ctx.arc(hd.x, hd.cy, hd.h * Math.min(th, .42) * (1.15 + Math.min(.25, Math.abs(G.P.v) * .03) * (.4 + deformK())), 0, TAU); ctx.fill(); }   // 水头
+      goo(ctx, k, false);
+    }
+    dropDraw(ctx, k, D, col); cardDraw(ctx, k, K, 10, col);
+  };
+  return G;
+}
+/* ================= 颜色公用 ================= */
+const hsv2rgb = (h, s, v) => { const f = n => { const k = (n + h / 60) % 6; return (v - v * s * Math.max(0, Math.min(k, 4 - k, 1))) * 255; }; return [f(5), f(3), f(1)]; };
+const rgb2hsv = c => { const [r, g, b] = c.map(x => x / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = 0; if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if (h < 0) h += 360; return [h, mx ? d / mx : 0, mx]; };
+const toHex = c => '#' + c.map(v => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, '0')).join('').toUpperCase();
+const parseHex = t => { t = String(t).trim().replace(/^#/, ''); if (/^[0-9a-f]{3}$/i.test(t)) t = t.replace(/./g, x => x + x); return /^[0-9a-f]{6}$/i.test(t) ? hex('#' + t) : null; };
+const lum = c => { const [r, g, b] = c.map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
+const inkOn = c => lum(c) > .3 ? '#161514' : '#ffffff';   // 色块上的字：亮色上用黑，暗色上用白
+const visCol = c => { const d = Math.abs(lum(c) - lum(C.bg)); return d > .1 ? c : mixc(c, C.body, (.1 - d) / .1 * .55); };   // 太贴近底色的颜色，往组件色靠一点，水和烟才看得见
+const colTo = (a, b, dt, tau = .16) => mixc(a, b, 1 - Math.exp(-dt / tau));
+function colorName(c) {
+  const [h, s, v] = rgb2hsv(c);
+  if (v < .14) return '黑';
+  if (s < .12) return v > .93 ? '白' : v > .62 ? '浅灰' : v > .32 ? '灰' : '深灰';
+  const n = [[14, '红'], [40, '橙'], [64, '黄'], [88, '黄绿'], [158, '绿'], [196, '青'], [252, '蓝'], [288, '紫'], [334, '品红'], [361, '红']].find(([e]) => h < e)[1];
+  return (v < .5 ? '深' : s < .42 && v > .78 ? '浅' : '') + n;
+}
+// 颜色通道滑块（色相、饱和度……）。轨道是渐变；圆头是一颗实心，外圈是组件色，里面是它脚下那段的颜色。
+// 拖：紧跟手，跑快了往身后喷当下那段颜色的烟（一路划过色相，就拖出一串彩色的烟）；
+// 点轨道：圆头化成雾，贴着轨道流过去，雾一路变成路过那段的颜色；鼠标停在上面：圆头顶上慢慢冒小云，云是它自己的颜色
+function chanSlider(o) {
+  const el = o.el, cv = setup(el.querySelector('canvas')), M = makeSmoke(), R = 11, PX = 30, CY = 72;
+  const X0 = PX + R, X1 = PX + o.w - R, ps = makeFog(22, 2.8), st = o.step || 1;
+  let value = o.value;
+  const toX = v => X0 + (X1 - X0) * (v - o.min) / (o.max - o.min), toV = x => o.min + clamp((x - X0) / (X1 - X0), 0, 1) * (o.max - o.min);
+  const colAt = x => o.colorAt(toV(x));
+  const S = { X: spring(toX(value)), c: spring(1), cs: spring(1), travel: false, drag: null, t: 0, prevX: toX(value), vel: 0, mx: toX(value), hov: false, idle: .2, repT: 0, st: 0 };
+  for (const p of ps) { p.x = S.X.x + p.u * 7; p.y = CY + p.v * 7; }
+  const snap = v => clamp(Math.round(v / st) * st, o.min, o.max);
+  const aria = () => { el.setAttribute('aria-valuenow', String(value)); if (o.text) el.setAttribute('aria-valuetext', o.text(value)); };
+  const setValue = v => { const nv = snap(v); if (nv === value) return; value = nv; aria(); if (o.onInput) o.onInput(value); };
+  aria();
+  const localX = e => e.clientX - cv.cv.getBoundingClientRect().left;
+  el.addEventListener('pointerenter', e => { S.hov = e.pointerType !== 'touch'; });
+  el.addEventListener('pointerleave', () => { S.hov = false; });
+  el.addEventListener('pointerdown', e => {
+    el.setPointerCapture(e.pointerId);
+    const x = localX(e), n = smokeK();
+    S.drag = { id: e.pointerId, grab: 0, samples: [], x0: x, active: false };
+    if (Math.abs(x - S.X.x) <= R + 6) { S.drag.grab = S.X.x - x; S.drag.active = true; S.travel = false; S.c.t = 1; }
+    else {   // 点在轨道上：圆头化开，流过去再凝回来
+      setValue(toV(x)); S.X.t = toX(value);
+      if (!reduced) {
+        S.travel = true; S.c.t = 0; const dir = Math.sign(S.X.t - S.X.x);
+        for (const p of ps) { p.vx += dir * (20 + Math.random() * 80); p.vy += J() * 50; }
+        if (n) smokeEmit(M, 2, S.X.x - dir * R, CY, { vx: -dir * 60, jit: 20, spreadY: 6, r: 2.4, grow: 3.5, a: .28, life: .9, lift: 4, col: colAt(S.X.x) });
+      } else S.X.x = S.X.t;
+    }
+    pushSample(S.drag.samples, x);
+  });
+  el.addEventListener('pointermove', e => {
+    const d = S.drag; if (!d || e.pointerId !== d.id) return;
+    const x = localX(e);
+    if (!d.active) { if (Math.abs(x - d.x0) < 4) return; d.active = true; d.grab = 0; S.travel = false; S.c.t = 1; }
+    S.X.x = rubber(x + d.grab, X0, X1, 10); pushSample(d.samples, x); S.X.v = vel(d.samples);
+    setValue(toV(S.X.x));
+  });
+  const up = e => { const d = S.drag; if (!d || e.pointerId !== d.id) return; if (d.active) { S.X.t = toX(value); S.X.v = 0; } S.drag = null; };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  el.addEventListener('keydown', e => {
+    const big = e.shiftKey ? 10 : 1, d = { ArrowRight: st * big, ArrowUp: st * big, ArrowLeft: -st * big, ArrowDown: -st * big, PageUp: st * 10, PageDown: -st * 10 }[e.key];
+    const nv = d !== undefined ? value + d : e.key === 'Home' ? o.min : e.key === 'End' ? o.max : null;
+    if (nv === null) return;
+    e.preventDefault(); S.repT = performance.now(); setValue(nv); S.X.t = toX(value);
+  });
+  const api = {
+    cv, M, get value() { return value; },
+    set(v) { value = snap(v); aria(); S.X.t = toX(value); },
+    aria,
+    step(dt) {
+      S.t += dt;
+      const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub, dragging = S.drag && S.drag.active;
+      for (let i = 0; i < sub; i++) {
+        if (!dragging && !S.travel) stepS(S.X, h, resp() * .8, Math.max(.5, zeta()));
+        stepS(S.c, h, S.travel ? .12 : .1, 1); stepS(S.cs, h, .22, Math.max(.25, zeta() * .7));
+      }
+      if (dragging && performance.now() - S.drag.samples[S.drag.samples.length - 1].t > 70) S.X.v = 0;
+      const n = smokeK(), d = fogStep(ps, S.travel ? S.X.t : S.X.x, CY, 7, S.travel ? 3 : 7, S.travel, S.t, dt, true);
+      let mx = 0; for (const p of ps) mx += p.x; S.mx = mx / ps.length;
+      if (S.travel && n) for (const p of ps) { const sp = Math.hypot(p.vx, p.vy); if (sp > 110 && Math.random() < dt * 4 * n) smokeEmit(M, 1, p.x, p.y, { vx: -p.vx * .3, vy: -p.vy * .3, r: 1.8, grow: 3.5, a: .26, life: .8, lift: 4, col: colAt(p.x) }); }   // 路上喷的烟是路过那段的颜色
+      if (S.travel && d < 2) { S.travel = false; S.X.x = S.X.t; S.X.v = 0; S.c.t = 1; S.cs.x = .8; S.cs.v = 0; S.cs.t = 1; }
+      const endX = S.travel ? S.mx : S.X.x, col = colAt(endX), vNow = (endX - S.prevX) / Math.max(dt, 1e-3);
+      S.prevX = endX; S.vel += (vNow - S.vel) * .35;
+      if (performance.now() - S.repT > 250) trailPuffs(M, dt, endX - Math.sign(S.vel) * R * .5, CY - 4, S.vel, 0, 1, col);   // 键盘连按不冒
+      if (n && S.hov && !S.drag && !S.travel) { S.idle -= dt; if (S.idle <= 0) { S.idle = (.55 + Math.random() * .6) / (.45 + n); cloudlet(M, S.X.x + J() * 6, CY - R - 1, { r: 2.3, grow: 3.4, a: .27, life: 1.5, lift: 15, vy: -14, col }); } }
+      S.st = clamp(Math.abs(S.travel ? 0 : S.X.v) * .001 * deformK() * 1.5, 0, .45);
+      smokeStep(M, dt);
+    },
+    draw() {
+      if (!clear(cv)) return;
+      const ctx = cv.ctx, k = cv.k, end = S.travel ? S.mx : S.X.x, col = colAt(end);
+      smokeDraw(M, ctx, k);
+      fogDraw(ctx, k, ps, .1 + .9 * (1 - S.c.x), col);
+      if (S.c.x > .01) {
+        const sx = (1 + S.st) * S.cs.x, sy = (1 - S.st * .3) * (2 - S.cs.x), x = S.X.x - Math.sign(S.X.v) * R * S.st * .5;
+        ctx.globalAlpha = S.c.x; goo(ctx, k, true);
+        ctx.beginPath(); ctx.ellipse(x, CY, R * sx, R * sy, 0, 0, TAU); ctx.fillStyle = rgb(C.body); ctx.fill(); goo(ctx, k, false);
+        ctx.beginPath(); ctx.ellipse(x, CY, (R - 3) * sx, (R - 3) * sy, 0, 0, TAU); ctx.fillStyle = rgb(col); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    },
+  };
+  comps.push({ cvo: cv, step: api.step, draw: api.draw });
+  return api;
+}
+
+
+/* ================= 手风琴：展开时左边的小点淌成竖条，跟着内容往下长。multi 为真时几项可以同时开着 ================= */
+function accordionFx(acc, multi) {
+  const cv = setup(acc.querySelector('canvas')), M = makeSmoke();
+  const items = [...acc.querySelectorAll('.aitem')].map(it => {
+    const trig = it.querySelector('.atrig'), body = it.querySelector('.abody'), chev = it.querySelector('.chev');
+    const open = trig.getAttribute('aria-expanded') === 'true';
+    body.style.height = open ? 'auto' : '0px'; body.hidden = !open;
+    return { it, trig, body, chev, open, h: spring(open ? 1 : 0), beads: makeBeads(3), prevLen: -1, vel: 0, acc: 0, len: 0 };
+  });
+  const triggers = items.map(x => x.trig);
+  let quiet = 0;   // 都停稳了以后就不再每帧量尺寸（省掉强制排版）；一有变化再量
+  new ResizeObserver(() => { quiet = 0; }).observe(acc);
+  function set(x, open) { x.open = open; x.trig.setAttribute('aria-expanded', String(open)); x.h.t = open ? 1 : 0; if (reduced) x.h.x = x.h.t; quiet = 0; }
+  items.forEach((x, i) => {
+    x.trig.addEventListener('click', () => { const willOpen = !x.open; if (!multi) items.forEach(y => { if (y !== x && y.open) set(y, false); }); set(x, willOpen); });   // multi：几项可以同时开着
+    x.trig.addEventListener('keydown', e => {
+      const n = triggers.length;
+      const j = { ArrowDown: (i + 1) % n, ArrowUp: (i - 1 + n) % n, Home: 0, End: n - 1 }[e.key];
+      if (j !== undefined) { e.preventDefault(); triggers[j].focus(); }
+    });
+  });
+  comps.push({
+    step(dt) {
+      const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub, n = smokeK();
+      const still = items.every(x => Math.abs(x.h.x - x.h.t) < .002 && Math.abs(x.h.v) < .01) && items.every(x => Math.abs(x.vel) < 1);
+      quiet = still ? quiet + 1 : 0;
+      if (quiet > 3) { for (const x of items) beadsStep(x.beads, 0, 0, dt); smokeStep(M, dt); return; }
+      const b = cv.cv.getBoundingClientRect();
+      for (const x of items) {
+        for (let i = 0; i < sub; i++) stepS(x.h, h, resp() * 1.1, Math.max(.5, zeta()));
+        if (x.h.t === 1) x.body.hidden = false;
+        const full = x.body.scrollHeight, hh = clamp(x.h.x, 0, 1) * full;   // 不冲过内容：内容到哪，线就到哪
+        x.body.style.height = (Math.abs(x.h.x - x.h.t) < .002 && x.h.t === 1) ? 'auto' : hh.toFixed(1) + 'px';
+        x.body.style.opacity = clamp(x.h.x * 1.4 - .2, 0, 1).toFixed(3);
+        if (x.h.t === 0 && x.h.x < .005) x.body.hidden = true;
+        x.chev.style.transform = `rotate(${(clamp(x.h.x, 0, 1.1) * 180).toFixed(1)}deg)`;
+        const tr = x.trig.getBoundingClientRect(), br = x.body.getBoundingClientRect();
+        x.dx = tr.left - b.left + 9; x.y0 = tr.top - b.top + tr.height / 2;
+        x.len = Math.max(0, Math.min(br.bottom - b.top - 12, x.y0 + (br.bottom - br.top) + 8) - x.y0);
+        if (x.prevLen < 0) x.prevLen = x.len;
+        const v = (x.len - x.prevLen) / Math.max(dt, 1e-3); x.prevLen = x.len;
+        x.acc += ((v - x.vel) / Math.max(dt, 1e-3) - x.acc) * .35; x.vel = v;
+        beadsStep(x.beads, x.acc, x.vel, dt);
+        if (n && v > 120 && Math.random() < dt * 6 * n) smokeEmit(M, 1, x.dx + 2, x.y0 + x.len, { vx: 10 + Math.random() * 14, vy: -6, r: 1.6, grow: 3, a: .3, life: .7, lift: 10 });
+      }
+      smokeStep(M, dt);
+    },
+    draw() {
+      if (!clear(cv)) return;
+      const ctx = cv.ctx;
+      smokeDraw(M, ctx, cv.k);
+      ctx.fillStyle = rgb(C.body);
+      for (const x of items) {
+        ctx.beginPath(); ctx.arc(x.dx, x.y0, 3.5, 0, TAU); ctx.fill();
+        if (x.len > 2) { goo(ctx, cv.k, true); rrect(ctx, x.dx - 2, x.y0, 4, x.len, 2); ctx.fill(); beadsDraw(ctx, x.beads, x.dx, x.y0 + 4, x.dx, x.y0 + x.len, 2); goo(ctx, cv.k, false); }
+      }
+    },
+  });
+}
+
+/* ================= 开关：圆头是一团凝实的雾 =================
+   点一下：圆头散成雾，飘过去，到了再凝回来。拖、甩：保持凝实，带着往后喷的尾迹滑过去。 */
+function makeSwitch(el) {
+  const cv = setup(el.querySelector('canvas')), PX = 40, PY = 70, W = 56, H = 32, R = 12, X0 = 16, X1 = 40, CY = PY + H / 2;
+  const M = makeSmoke(), hov = hovering(el), on0 = el.getAttribute('aria-checked') === 'true';
+  const S = { x: spring(on0 ? X1 : X0), press: spring(0), on: on0, drag: null, suppress: false, prevSide: 0, lastV: 0,
+    travel: false, c: spring(1), cs: spring(1), halo: spring(0), t: 0, mx: 0 };
+  const fog = [];
+  for (let i = 0; i < 46; i++) {
+    let u, v; do { u = Math.random() * 2 - 1; v = Math.random() * 2 - 1; } while (u * u + v * v > 1);
+    fog.push({ u, v, x: PX + S.x.x + u * R * .75, y: CY + v * R * .75, vx: 0, vy: 0, rs: .08 + Math.random() * .2,
+      r: 2.4 + Math.random() * 2, a: .45 + Math.random() * .25, ph: Math.random() * TAU, w: .6 + Math.random() * 1.2,
+      rot: Math.random() * TAU, spin: J() * .6, k: (Math.random() * 3) | 0 });
+  }
+  S.mx = PX + S.x.x;
+  function setOn(v, viaDrag) {
+    if (v !== S.on) {
+      const n = smokeK(), dir = v ? 1 : -1;
+      if (!viaDrag && !reduced) {
+        S.travel = true; S.c.t = 0; S.c.x = 0; S.dir = dir;
+        for (const f of fog) { f.vx += dir * (30 + Math.random() * 90); f.vy += J() * 60 * (.4 + deformK()); }
+        if (n) smokeEmit(M, 2 + Math.round(3 * n), PX + S.x.x - dir * R * .6, CY, { vx: -dir * 120, jit: 30, spreadY: R * .8, r: 3, grow: 4.5, a: .26, life: 1, lift: 3 });
+      } else if (n) {
+        smokeEmit(M, 3 + Math.round(3 * n), PX + S.x.x - dir * R * .7, CY, { vx: -dir * 150, vy: -12, jit: 40, spreadY: R * .8, r: 3.2, grow: 4.5, a: .3, life: 1.2, lift: 4 });
+      }
+    }
+    S.on = v; el.setAttribute('aria-checked', String(v)); S.x.t = v ? X1 : X0;
+  }
+  const off = () => el.disabled || el.getAttribute('aria-disabled') === 'true';   // 禁用的：不响应
+  el.addEventListener('pointerdown', e => {
+    if (off()) return;
+    S.suppress = false;
+    if (S.travel) { S.travel = false; S.c.t = 1; S.x.x = clamp(S.mx - PX, X0, X1); S.x.v = 0; }
+    S.drag = { id: e.pointerId, x0: e.clientX, tx0: S.x.x, moved: false, samples: [] };
+    pushSample(S.drag.samples, e.clientX);
+    el.setPointerCapture(e.pointerId);
+    S.press.t = 1;
+  });
+  el.addEventListener('pointermove', e => {
+    const d = S.drag;
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x0;
+    if (!d.moved && Math.abs(dx) > 3) d.moved = true;
+    if (!d.moved) return;
+    pushSample(d.samples, e.clientX);
+    S.x.x = rubber(d.tx0 + dx, X0, X1, 12);
+    S.x.v = vel(d.samples);
+  });
+  const up = e => {
+    const d = S.drag;
+    if (!d || e.pointerId !== d.id) return;
+    S.press.t = 0;
+    if (d.moved) { S.x.v = vel(d.samples, performance.now()); setOn(S.x.x + S.x.v * .1 > (X0 + X1) / 2, true); S.suppress = true; }
+    S.drag = null;
+  };
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+  el.addEventListener('click', () => { if (off()) return; if (S.suppress) { S.suppress = false; return; } setOn(!S.on, false); });
+
+  comps.push({
+    step(dt) {
+      S.t += dt;
+      const sub = Math.max(1, Math.ceil(dt * 240)), h = dt / sub;
+      for (let i = 0; i < sub; i++) {
+        if (!S.drag || !S.drag.moved) stepS(S.x, h, resp(), zeta());
+        stepS(S.press, h, .18, .85);
+        stepS(S.c, h, S.travel ? .12 : .18, 1);
+        stepS(S.cs, h, .24, Math.max(.25, zeta() * .7));
+        stepS(S.halo, h, .4, 1);
+      }
+      if (S.drag && S.drag.moved && performance.now() - S.drag.samples[S.drag.samples.length - 1].t > 70) S.x.v = 0;
+      const v = S.travel ? 0 : S.x.v, n = smokeK(), dk = deformK();
+      const st = clamp(Math.abs(v) * .0011 * dk * 1.6, 0, .5);
+      const cxp = PX + (S.travel ? S.x.t : S.x.x);
+      let dsum = 0, mx = 0;
+      for (const f of fog) {
+        let tx = cxp + f.u * R * .75 * (1 + st), ty = CY + f.v * R * .75 * (1 - st * .3);
+        tx += Math.sin(S.t * f.w + f.ph) * .7; ty += Math.cos(S.t * f.w * .8 + f.ph) * .7;
+        if (S.travel) ty += Math.sin(S.t * 4 * f.w + f.ph) * 3 * dk;   // 飘的时候慢慢翻滚
+        const [k, c] = kc(S.travel ? f.rs * (1.5 - F.speed * .7) * 1.7 : .1, S.travel ? .7 : .8);
+        for (let i = 0; i < sub; i++) { f.vx += (-k * (f.x - tx) - c * f.vx) * h; f.vy += (-k * (f.y - ty) - c * f.vy) * h; f.x += f.vx * h; f.y += f.vy * h; }
+        f.rot += f.spin * dt;
+        dsum += Math.hypot(f.x - tx, f.y - ty); mx += f.x;
+        if (S.travel && n) {   // 一路往身后喷
+          const sp = Math.hypot(f.vx, f.vy);
+          if (sp > 130 && Math.random() < dt * 4 * n) smokeEmit(M, 1, f.x, f.y, { vx: -f.vx * .3, vy: J() * 10, r: 2.4, grow: 4.5, a: .22, life: .9, lift: 3 });
+        }
+      }
+      S.mx = mx / fog.length;
+      if (reduced) { for (const f of fog) { f.x = cxp + f.u * R * .75; f.y = CY + f.v * R * .75; f.vx = f.vy = 0; } S.travel = false; S.c.x = S.c.t = 1; }
+      if (S.travel && dsum / fog.length < 2.5) {   // 到了：凝回来，q 一下，前面冒一小团
+        S.travel = false; S.c.t = 1; S.cs.x = .76; S.cs.v = 0; S.cs.t = 1; S.x.x = S.x.t; S.x.v = 0;
+        if (n) smokeEmit(M, 2 + Math.round(2 * n), PX + S.x.t + S.dir * R, CY, { radial: 40, vx: S.dir * 20, vy: -6, spreadY: R, r: 2.6, grow: 4.5, a: .24, life: 1, lift: 6 });
+      }
+      if (!S.travel && n && Math.abs(v) > 60) {   // 凝实着滑过去：像排气管往身后喷
+        M.acc += Math.abs(v) * .06 * n * dt;
+        while (M.acc >= 1) { M.acc -= 1; smokeEmit(M, 1, PX + S.x.x - Math.sign(v) * R * .9, CY + J() * R * .9, { vx: -v * .45, vy: J() * 10, jit: 18, r: 2.6, grow: 5, a: .24, life: 1, lift: 3 }); }
+      }
+      if (hov.on && !S.drag && !S.travel && n) {
+        M.idle -= dt;
+        if (M.idle <= 0) { M.idle = (.25 + Math.random() * .35) / (.45 + n); smokeEmit(M, 1, PX + S.x.x + J() * R * .8, CY - R * .8, { vx: J() * 8, vy: -16, r: 2.4, grow: 4.5, a: .18, life: 1.8, lift: 18 }); }
+      }
+      const side = Math.sign(S.x.x - S.x.t);
+      if (!S.drag && !S.travel && side !== 0 && S.prevSide !== 0 && side !== S.prevSide && Math.abs(S.lastV) > 120) {
+        S.cs.v -= Math.min(4, Math.abs(S.lastV) / 150) * dk;   // 冲过头：被撞扁一下
+        if (n) smokeEmit(M, 2 + Math.round(3 * n), PX + S.x.x + Math.sign(S.lastV) * R, CY, { radial: 45, vx: Math.sign(S.lastV) * 20, vy: -6, spreadY: R, r: 2.8, grow: 4.5, a: .26, life: 1, lift: 6 });
+      }
+      S.prevSide = side; S.lastV = v;
+      S.halo.t = S.drag ? .7 : 0;
+      S.halo.x = Math.max(S.halo.x, Math.min(.8, Math.abs(v) / 700));
+      S.st = st;
+      stirFog(fog, cv.cv, M);
+      smokeStep(M, dt);
+    },
+    draw() {
+      if (!clear(cv)) return;
+      const ctx = cv.ctx, k = cv.k, p = clamp((S.mx - PX - X0) / (X1 - X0), 0, 1);
+      el.style.backgroundColor = rgb(mixc(C.track, C.trackOn, p));
+      smokeDraw(M, ctx, k);
+      fogDraw(ctx, k, fog, .1 + .9 * (1 - S.c.x));
+      if (S.c.x > .01) {
+        const st = S.st || 0, pr = S.press.x, cs = S.cs.x;
+        const rx = R * (1 + st + pr * .18) * cs, ry = R * (1 - st * .3 - pr * .03) * (2 - cs);
+        const x = PX + (S.travel ? S.x.t : S.x.x) - Math.sign(S.x.v) * R * st * .5;
+        const hl = reduced ? 0 : S.halo.x;
+        if (hl > .01) { ctx.shadowColor = rgba(C.body, Math.min(.85, .7 * hl)); ctx.shadowBlur = 16 * k * hl; }
+        ctx.globalAlpha = S.c.x;
+        ctx.beginPath(); ctx.ellipse(x, CY, Math.max(1, rx), Math.max(1, ry), 0, 0, TAU); ctx.fillStyle = rgb(C.body); ctx.fill();
+        ctx.globalAlpha = 1; ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+      }
+    },
+  });
+}
+/* ================= 日历：选中的那天是一团实心，换日子时化开飘过去 ================= */
+(() => {
+  const root = $('#cal'), cv = setup(root.querySelector('canvas')), title = $('#calTitle'), body = root.querySelector('tbody'), M = makeSmoke();
+  const WK = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+  const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let view = new Date(today.getFullYear(), today.getMonth(), 1), sel = new Date(today), focusD = new Date(today), btns = [], t = 0;
+  const same = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  const inView = d => d.getFullYear() === view.getFullYear() && d.getMonth() === view.getMonth();
+  const Mk = makeDrop(17, M); Mk.on = true;
+  function render() {
+    title.textContent = `${view.getFullYear()}年${view.getMonth() + 1}月`;
+    body.textContent = ''; btns = [];
+    const first = view.getDay(), days = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+    let tr = null;
+    for (let i = 0; i < 42; i++) {   // 固定 6 行，翻月时高度不跳
+      if (i % 7 === 0) { tr = document.createElement('tr'); body.appendChild(tr); }
+      const td = document.createElement('td'), d = i - first + 1;
+      td.setAttribute('role', 'gridcell');
+      if (d >= 1 && d <= days) {
+        const date = new Date(view.getFullYear(), view.getMonth(), d), b = document.createElement('button');
+        td.setAttribute('aria-selected', String(same(date, sel)));
+        b.type = 'button'; b.textContent = d; b.tabIndex = -1; b.dataset.d = d;
+        b.dataset.base = `${view.getFullYear()}年${view.getMonth() + 1}月${d}日，${WK[date.getDay()]}${same(date, today) ? '，今天' : ''}`;
+        b.setAttribute('aria-label', b.dataset.base + (same(date, sel) ? '，已选中' : ''));
+        if (same(date, today)) { b.dataset.today = '1'; b.setAttribute('aria-current', 'date'); }
+        b.addEventListener('click', () => pick(date));
+        td.appendChild(b); btns[d - 1] = b;
+      }
+      tr.appendChild(td);
+    }
+    if (!inView(focusD)) focusD = inView(sel) ? new Date(sel) : new Date(view);
+    btns[focusD.getDate() - 1].tabIndex = 0;
+  }
+  function syncMarker() {   // 选中的日子不在这个月：化成小云飘走；翻回来：q 弹着鼓出来
+    const vis = inView(sel), n = smokeK();
+    if (vis && !Mk.on) {
+      Mk.on = true; const [x, y] = centerIn(btns[sel.getDate() - 1], cv); dropTo(Mk, x, y, true);
+      if (!reduced) { Mk.s.x = .3; Mk.s.v = 0; } Mk.s.t = 1;
+      if (n) smokeEmit(M, Math.round(4 + 4 * n), x, y, { radial: 46, r: 2.8, grow: 2.6, a: .3, life: .7, lift: 8 });
+    } else if (!vis && Mk.on) {
+      Mk.on = false; Mk.s.t = 0; if (reduced) Mk.s.x = 0;
+      if (n) smokeEmit(M, Math.round(4 + 4 * n), Mk.hx.x, Mk.hy.x, { spread: 10, vy: -34, jit: 18, r: 3.2, grow: 3, a: .3, life: 1, lift: 22 });
+    }
+  }
+  function pick(date) {
+    const was = sel; sel = new Date(date); focusD = new Date(date);
+    if (!inView(date)) { view = new Date(date.getFullYear(), date.getMonth(), 1); render(); }
+    btns.forEach(b => { const on = +b.dataset.d === date.getDate(); b.parentElement.setAttribute('aria-selected', String(on)); b.setAttribute('aria-label', b.dataset.base + (on ? '，已选中' : '')); });
+    btns.forEach(b => { b.tabIndex = +b.dataset.d === date.getDate() ? 0 : -1; });
+    if (!Mk.on) { syncMarker(); return; }
+    if (same(was, date)) { if (!reduced) { Mk.cs.x = .84; Mk.cs.v = 0; } return; }
+    const [x, y] = centerIn(btns[date.getDate() - 1], cv); dropTo(Mk, x, y);   // 整滴流过去：头先到，尾巴被拖着
+  }
+  function moveFocus(nd) {
+    focusD = nd;
+    if (!inView(nd)) { view = new Date(nd.getFullYear(), nd.getMonth(), 1); render(); syncMarker(); }
+    btns.forEach(b => { b.tabIndex = +b.dataset.d === nd.getDate() ? 0 : -1; });
+    btns[nd.getDate() - 1].focus();
+  }
+  body.addEventListener('keydown', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const d = new Date(view.getFullYear(), view.getMonth(), +b.dataset.d);
+    const st = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+    let nd = null;
+    if (st !== undefined) nd = new Date(d.getFullYear(), d.getMonth(), d.getDate() + st);
+    else if (e.key === 'Home') nd = new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay());
+    else if (e.key === 'End') nd = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 6 - d.getDay());
+    else if (e.key === 'PageUp' || e.key === 'PageDown') {
+      const m = d.getMonth() + (e.key === 'PageUp' ? -1 : 1) * (e.shiftKey ? 12 : 1), last = new Date(d.getFullYear(), m + 1, 0).getDate();   // Shift：跨一年
+      nd = new Date(d.getFullYear(), m, Math.min(d.getDate(), last));
+    }
+    if (!nd) return;
+    e.preventDefault(); moveFocus(nd);
+  });
+  root.querySelectorAll('.calnav').forEach(b => b.addEventListener('click', () => {
+    view = new Date(view.getFullYear(), view.getMonth() + +b.dataset.d, 1);
+    focusD = inView(sel) ? new Date(sel) : new Date(view); render(); syncMarker();
+  }));
+  render();
+  comps.push({
+    step(dt) {
+      t += dt;
+      if (Mk.on && btns[sel.getDate() - 1]) {
+        const [x, y] = centerIn(btns[sel.getDate() - 1], cv);
+        if (!Mk.placed) dropTo(Mk, x, y, true); else if (Math.abs(Mk.hx.t - x) + Math.abs(Mk.hy.t - y) > .5) dropTo(Mk, x, y, !Mk.moving && Math.hypot(Mk.hx.t - x, Mk.hy.t - y) < 6);
+      }
+      dropStep(Mk, dt);
+      const tb = inView(today) ? btns[today.getDate() - 1] : null;
+      this.today = tb ? centerIn(tb, cv) : null;
+      smokeStep(M, dt);
+    },
+    draw() {
+      if (!clear(cv)) return;
+      const ctx = cv.ctx, k = cv.k;
+      smokeDraw(M, ctx, k);
+      dropDraw(ctx, k, Mk);
+      if (this.today) {   // 今天：数字下面一颗小点；被选中的实心盖住时，点换成底色
+        const [x, y] = this.today, covered = Mk.s.x > .5 && Math.hypot(Mk.hx.x - x, Mk.hy.x - y) < 8;
+        ctx.beginPath(); ctx.arc(x, y + 10, 1.8, 0, TAU); ctx.fillStyle = rgb(covered ? C.bodyInk : C.body); ctx.fill();
+      }
+    },
+  });
+})();
+
+/* ---------- 循环、主题、面板 ---------- */
+readTheme();
+darkMQ.addEventListener('change', readTheme);
+new MutationObserver(readTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-card'] });
+reduceMQ.addEventListener('change', e => { reduced = e.matches || !!window.__forceReduced; });
+let last = performance.now();
+function frame(now) {
+  let dt = (now - last) / 1000; last = now;
+  if (!(dt > 0)) dt = 1 / 120;
+  dt = Math.min(dt, 1 / 30);
+  if (now - ptr.moveT > 80) { ptr.vx = 0; ptr.vy = 0; }
+  for (const c of comps) { if (c.cvo && !c.cvo.visible) continue; c.step(dt); c.draw(); }
+  ptr.px = ptr.x; ptr.py = ptr.y;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// 换颜色：只是给页面换一组颜色变量，组件、烟、文字反色全部跟着走
+{
+  const root = document.documentElement, outer = root.getAttribute('data-theme') || '', tb = [...document.querySelectorAll('#themes button')];
+  const mark = t => tb.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === t)));
+  tb.forEach(b => b.addEventListener('click', () => {
+    const t = b.dataset.t;
+    if (t) root.setAttribute('data-theme', t); else if (outer) root.setAttribute('data-theme', outer); else root.removeAttribute('data-theme');
+    mark(t);
+  }));
+}
+// 弹层的样子：实心卡／浅色卡
+{
+  const cb = [...document.querySelectorAll('#cardSeg button')];
+  cb.forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.c === 'light') document.documentElement.setAttribute('data-card', 'light'); else document.documentElement.removeAttribute('data-card');
+    cb.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+}
+// 手感面板（展示页才有；单个组件的页面没有这块，就跳过）
+if ($('#speed')) {
+  const keys = ['speed', 'bounce', 'deform', 'smoke'];
+  const presetBtns = [...document.querySelectorAll('#presets button')];
+  const pressBtns = a => presetBtns.forEach(b => b.setAttribute('aria-pressed', String(b === a)));
+  const sync = () => { for (const k of keys) { const v = Math.round(F[k] * 100); $('#' + k).value = v; $('#o-' + k).textContent = v; } };
+  for (const k of keys) $('#' + k).addEventListener('input', e => { F[k] = e.target.value / 100; $('#o-' + k).textContent = e.target.value; pressBtns(null); });
+  presetBtns.forEach(b => b.addEventListener('click', () => { Object.assign(F, PRESETS[b.dataset.p]); sync(); pressBtns(b); }));
+  sync();
+}
+// ---------- 演示：文档站点“播放”时，照着脚本自己动一遍，带一个假鼠标，方便录屏 ----------
+const Demo = (() => {
+  let run = 0, cur = null, cap = null, down = false, cx = 0, cy = 0, hov = null, patched = false;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const SVG = '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M5 2.5v17.2l4.6-4.3 2.9 6.4 2.9-1.3-2.8-6.3 6.4-.3z" fill="#161514" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg><i></i>';
+  const cursor = () => { if (!cur) { cur = document.createElement('div'); cur.className = 'demo-cursor'; cur.innerHTML = SVG; document.body.appendChild(cur); } return cur; };
+  const place = () => { cursor().style.transform = `translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px)`; };
+  const opt = (type, extra) => ({ bubbles: !/enter|leave/.test(type), cancelable: true, composed: true, clientX: cx, clientY: cy, button: 0, buttons: down ? 1 : 0, view: window, ...extra });
+  const pe = (type, t, extra) => { if (t) t.dispatchEvent(new PointerEvent(type, opt(type, { pointerId: 1, pointerType: 'mouse', isPrimary: true, ...extra }))); };
+  const me = (type, t, extra) => { if (t) t.dispatchEvent(new MouseEvent(type, opt(type, extra))); };
+  const under = () => document.elementFromPoint(cx, cy) || document.body;
+  const chain = e => { const a = []; for (; e; e = e.parentElement) a.push(e); return a; };
+  function hoverTo(e) {
+    if (e === hov) return;
+    const a = chain(hov), b = chain(e);
+    if (hov) { pe('pointerout', hov); me('mouseout', hov); }
+    for (const x of a) if (!b.includes(x)) { pe('pointerleave', x); me('mouseleave', x); }
+    for (const x of b.slice().reverse()) if (!a.includes(x)) { pe('pointerenter', x); me('mouseenter', x); }
+    if (e) { pe('pointerover', e); me('mouseover', e); }
+    hov = e;
+  }
+  function moveTo(x, y) { cx = x; cy = y; place(); const t = cap || under(); if (!cap) hoverTo(t); pe('pointermove', t); me('mousemove', t); }
+  function el(sel) { if (!sel) return null; const [q, n] = String(sel).split('|'); return document.querySelectorAll(q)[+n || 0] || null; }
+  function at(sel, fx = .5, fy = .5) { const e = el(sel); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left + r.width * fx, r.top + r.height * fy]; }
+  async function glide(x, y, ms = 420, id) {
+    const x0 = cx, y0 = cy, n = Math.max(2, Math.round(ms / 16));
+    for (let i = 1; i <= n; i++) { if (id !== run) return; const u = i / n, e = u < .5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2; moveTo(x0 + (x - x0) * e, y0 + (y - y0) * e); await sleep(16); }
+  }
+  function press() {
+    const t = under(); down = true; cap = t; cursor().classList.add('down');
+    pe('pointerdown', t); me('mousedown', t);
+    const f = t.closest('input,textarea,select,button,a[href],[tabindex]'); if (f && document.activeElement !== f) f.focus({ preventScroll: true });
+    return t;
+  }
+  function release(click = true) {
+    const t = cap || under(); down = false; cap = null; cursor().classList.remove('down');
+    pe('pointerup', t); me('mouseup', t); if (click) me('click', under());
+    hoverTo(under());
+  }
+  const key = k => { const t = document.activeElement || document.body; for (const type of ['keydown', 'keyup']) t.dispatchEvent(new KeyboardEvent(type, { key: k, code: k, bubbles: true, cancelable: true, composed: true })); };
+  function typeChar(ch) {
+    const t = document.activeElement; if (!t) return;
+    t.dispatchEvent(new KeyboardEvent('keydown', { key: ch, bubbles: true, cancelable: true }));
+    if ('value' in t) { t.value += ch; t.dispatchEvent(new InputEvent('input', { bubbles: true, data: ch, inputType: 'insertText' })); }
+    t.dispatchEvent(new KeyboardEvent('keyup', { key: ch, bubbles: true }));
+  }
+  const DEFAULT = () => { const f = document.querySelector('.stage button, .stage [tabindex="0"], .stage input'); const s = f ? (f.id ? '#' + f.id : null) : null; return s ? [['hover', s, 1200], ['click', s], ['wait', 1000], ['click', s], ['wait', 800], ['out']] : [['wait', 500]]; };
+  async function play(steps) {
+    const id = ++run;
+    if (!patched) {   // 假的指针没有真的 pointerId：抓取指针时别报错（抓取由这里自己模拟：按下后的移动都发给按下的那个元素）
+      patched = true;
+      for (const m of ['setPointerCapture', 'releasePointerCapture']) { const o = Element.prototype[m]; Element.prototype[m] = function (p) { try { return o.call(this, p); } catch (e) {} }; }
+    }
+    cursor().classList.add('on'); document.documentElement.classList.add('demo-run'); down = false; cap = null;
+    cx = innerWidth * .62; cy = innerHeight * .92; place(); hoverTo(under());
+    for (const s of steps || DEFAULT()) {
+      if (id !== run) return;
+      const [op, a, b, c, d, e2, f] = s;
+      if (op === 'wait') await sleep(a);
+      else if (op === 'move') { const p = at(a, b ?? .5, c ?? .5); if (p) await glide(p[0], p[1], d || 420, id); }
+      else if (op === 'hover') { const p = at(a); if (p) await glide(p[0], p[1], 420, id); await sleep(b || 900); }
+      else if (op === 'click') { if (a) { const p = at(a); if (p) await glide(p[0], p[1], 380, id); await sleep(90); } press(); await sleep(110); release(); await sleep(120); }
+      else if (op === 'ctx') { const t = under(); pe('pointerdown', t, { button: 2, buttons: 2 }); me('contextmenu', t, { button: 2 }); pe('pointerup', t, { button: 2 }); await sleep(100); }
+      else if (op === 'drag' || op === 'dragBy') {
+        let p0, p1;
+        if (op === 'drag') { p0 = at(a, b, c); p1 = at(a, d, e2); } else { p0 = at(a); p1 = p0 && [p0[0] + b, p0[1] + c]; }
+        if (!p0) continue;
+        await glide(p0[0], p0[1], 380, id); await sleep(80); press(); await sleep(90);
+        await glide(p1[0], p1[1], (op === 'drag' ? f : d) || 700, id); await sleep(60); release(false);
+      }
+      else if (op === 'key') { for (let i = 0; i < (b || 1); i++) { if (id !== run) return; key(a); await sleep(c || 200); } }
+      else if (op === 'type') { if (a) el(a)?.focus(); for (const ch of b) { if (id !== run) return; typeChar(ch); await sleep(c || 150); } }
+      else if (op === 'clear') { const t = el(a); if (t) { t.value = ''; t.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'deleteContentBackward' })); } }
+      else if (op === 'focus') el(a)?.focus();
+      else if (op === 'blur') document.activeElement?.blur();
+      else if (op === 'scroll') { const t = el(a); if (t) { const y0 = t.scrollTop, n = Math.max(2, Math.round((c || 800) / 16)); for (let i = 1; i <= n; i++) { if (id !== run) return; const u = i / n; t.scrollTop = y0 + b * (u < .5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2); await sleep(16); } } }
+      else if (op === 'wheel') { const t = el(a); for (let i = 0; i < (c || 3); i++) { if (id !== run) return; t?.dispatchEvent(new WheelEvent('wheel', { deltaY: b, bubbles: true, cancelable: true, clientX: cx, clientY: cy })); await sleep(d || 90); } }
+      else if (op === 'out') { await glide(innerWidth * .9, innerHeight * .96, 520, id); hoverTo(null); }
+    }
+    if (id !== run) return;
+    await sleep(300); cursor().classList.remove('on'); document.documentElement.classList.remove('demo-run');
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();   // 演示完把焦点放掉，免得留一圈焦点框
+    try { parent.postMessage({ type: 'cloud-demo-done' }, '*'); } catch (e) {}
+  }
+  function stop() { run++; if (down) release(false); hoverTo(null); if (cur) cur.classList.remove('on'); document.documentElement.classList.remove('demo-run'); }
+  return { play, stop };
+})();
+// 被嵌在文档站里时，外面可以发消息来换颜色、换手感
+window.addEventListener('message', e => {
+  const d = e.data || {};
+  if (d.type === 'cloud-theme') { if (d.theme) document.documentElement.setAttribute('data-theme', d.theme); else document.documentElement.removeAttribute('data-theme'); }
+  if (d.type === 'cloud-card') { if (d.card === 'light') document.documentElement.setAttribute('data-card', 'light'); else document.documentElement.removeAttribute('data-card'); }
+  if (d.type === 'cloud-reduced') { window.__forceReduced = !!d.on; reduced = !!d.on || reduceMQ.matches; for (const c of comps) if (c.onReduced) c.onReduced(); }
+  if (d.type === 'cloud-demo') { if (d.stop) Demo.stop(); else Demo.play(window.__DEMO); }
+  if (d.type === 'cloud-feel' && d.feel) { for (const k of ['speed', 'bounce', 'deform', 'smoke']) if (typeof d.feel[k] === 'number') F[k] = clamp(d.feel[k], 0, 1); }
+});
+})();</script>
+</body>
+</html>

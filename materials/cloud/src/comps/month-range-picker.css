@@ -1,0 +1,4 @@
+.dtile canvas{filter:url(#solid)}
+.dtile{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px}
+.dtile .mg{width:250px}
+.dtile canvas{position:absolute;left:-30px;top:-44px;width:calc(100% + 60px);height:calc(100% + 70px);pointer-events:none}

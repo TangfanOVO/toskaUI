@@ -1,0 +1,5 @@
+.dslider canvas{filter:url(#solid)}
+.srow{display:flex;align-items:center;gap:14px}
+.dslider{position:relative;width:220px;height:24px;cursor:pointer;touch-action:none;border-radius:12px}
+.dslider::before{content:"";position:absolute;left:0;right:0;top:10px;height:4px;border-radius:2px;background:var(--track)}
+.dslider canvas{position:absolute;left:-30px;top:-50px;width:280px;height:104px;pointer-events:none}

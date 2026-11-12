@@ -1,0 +1,11 @@
+.cawrap{flex-direction:column;gap:16px}
+.carea{position:relative;width:240px;height:160px;border-radius:12px;touch-action:none;cursor:crosshair;
+  background:linear-gradient(to top,#000,rgb(0 0 0 / 0)),linear-gradient(to right,#fff,hsl(var(--hue,250) 100% 50%));box-shadow:inset 0 0 0 1px rgb(0 0 0 / .07)}
+.carea canvas{position:absolute;left:-40px;top:-60px;width:320px;height:260px;pointer-events:none;filter:url(#solid)}
+.cathumb{position:absolute;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%}
+.cathumb:focus{outline:none}
+.cathumb:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.cathumb.pf:focus-visible{outline:none}
+.cawrap .chrow{width:240px}
+.cawrap .chlab{display:none}
+

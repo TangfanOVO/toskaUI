@@ -1,0 +1,7 @@
+.drate canvas{filter:url(#solid)}
+.rwrap{display:flex;align-items:center;gap:14px}
+.drate{position:relative;display:flex;gap:4px}
+.drate canvas{position:absolute;left:-30px;top:-56px;width:calc(100% + 60px);height:calc(100% + 86px);pointer-events:none}
+.drate button{position:relative;width:34px;height:34px;padding:3px;border:0;background:transparent;color:var(--muted);cursor:pointer;border-radius:8px}
+.drate svg{display:block;width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round}
+.drate button[aria-checked="true"]{color:var(--ink)}

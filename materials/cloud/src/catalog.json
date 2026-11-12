@@ -1,0 +1,1068 @@
+{
+ "groups": [
+  {
+   "zh": "动作",
+   "en": "Action",
+   "items": [
+    {
+     "reka": "Button",
+     "zh": "按钮",
+     "slug": "button",
+     "variants": [
+      {
+       "id": "button",
+       "label": "基础",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      },
+      {
+       "id": "button-styles",
+       "h": 300,
+       "sc": 0.62,
+       "isNew": true,
+       "label": "样式"
+      }
+     ],
+     "desc": "点一下就做一件事。实心云捏成的胶囊：按下去会凹，松手“噗”地冒一团云；鼠标停着时，慢慢往上冒小云。"
+    },
+    {
+     "reka": "Toggle",
+     "zh": "切换按钮",
+     "slug": "toggle",
+     "variants": [
+      {
+       "id": "toggle",
+       "label": "",
+       "h": 260,
+       "sc": 0.8,
+       "isNew": false
+      }
+     ],
+     "desc": "按一下开、再按一下关的按钮，开着的时候是实心。"
+    },
+    {
+     "reka": "Toggle Group",
+     "zh": "切换组",
+     "slug": "toggle-group",
+     "variants": [
+      {
+       "id": "toggle-group",
+       "label": "切换组",
+       "h": 260,
+       "sc": 0.8,
+       "isNew": false
+      },
+      {
+       "id": "segmented",
+       "label": "分段选择",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      }
+     ],
+     "desc": "一排切换按钮，可以只选一个，也可以选几个；选中的那块是实心，换的时候流过去。"
+    },
+    {
+     "reka": "Toolbar",
+     "zh": "工具栏",
+     "slug": "toolbar",
+     "variants": [
+      {
+       "id": "toolbar",
+       "label": "",
+       "h": 260,
+       "sc": 0.6,
+       "isNew": false
+      }
+     ],
+     "desc": "把一组按钮、切换组和链接收进一条，方向键在里面走。"
+    }
+   ]
+  },
+  {
+   "zh": "表单",
+   "en": "Form",
+   "items": [
+    {
+     "reka": "Autocomplete",
+     "zh": "自动补全",
+     "slug": "autocomplete",
+     "variants": [
+      {
+       "id": "autocomplete",
+       "label": "",
+       "h": 400,
+       "sc": 0.7,
+       "isNew": false
+      }
+     ],
+     "desc": "边打字边给建议，选中一条就补进框里。"
+    },
+    {
+     "reka": "Checkbox",
+     "zh": "复选框",
+     "slug": "checkbox",
+     "variants": [
+      {
+       "id": "checkbox",
+       "label": "",
+       "h": 260,
+       "sc": 0.75,
+       "isNew": false
+      }
+     ],
+     "desc": "勾上或取消一项。带“全选”的时候，下面勾了一部分就是半选。"
+    },
+    {
+     "reka": "Combobox",
+     "zh": "组合框",
+     "slug": "combobox",
+     "variants": [
+      {
+       "id": "combobox",
+       "label": "",
+       "h": 400,
+       "sc": 0.7,
+       "isNew": false
+      }
+     ],
+     "desc": "能打字筛选的选择框：输入几个字，列表跟着缩。"
+    },
+    {
+     "reka": "Editable",
+     "zh": "可编辑文字",
+     "slug": "editable",
+     "variants": [
+      {
+       "id": "editable",
+       "label": "",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      }
+     ],
+     "desc": "看起来是普通文字，点一下就能就地改。"
+    },
+    {
+     "reka": "Field",
+     "zh": "字段",
+     "slug": "field",
+     "variants": [
+      {
+       "id": "field",
+       "label": "",
+       "h": 260,
+       "sc": 0.65,
+       "isNew": false
+      }
+     ],
+     "desc": "输入框带上标签、说明和错误提示，读屏能把它们连起来念。"
+    },
+    {
+     "reka": "Form",
+     "zh": "表单",
+     "slug": "form",
+     "variants": [
+      {
+       "id": "form",
+       "label": "",
+       "h": 340,
+       "sc": 0.5,
+       "isNew": false
+      }
+     ],
+     "desc": "一组字段加一个提交按钮，提交前一项一项校验。"
+    },
+    {
+     "reka": "Listbox",
+     "zh": "列表框",
+     "slug": "listbox",
+     "variants": [
+      {
+       "id": "listbox",
+       "label": "",
+       "h": 280,
+       "sc": 0.55,
+       "isNew": false
+      }
+     ],
+     "desc": "一列选项，直接在列表里挑。"
+    },
+    {
+     "reka": "Number Field",
+     "zh": "数字输入",
+     "slug": "number-field",
+     "variants": [
+      {
+       "id": "number-field",
+       "label": "",
+       "h": 260,
+       "sc": 0.8,
+       "isNew": false
+      }
+     ],
+     "desc": "只收数字的输入框，带加减按钮，方向键也能调。"
+    },
+    {
+     "reka": "Label",
+     "zh": "标签文字",
+     "slug": "label",
+     "variants": [
+      {
+       "id": "label",
+       "label": "",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      }
+     ],
+     "desc": "配给输入控件的文字，点它就把焦点交给对应的控件。"
+    },
+    {
+     "reka": "Pin Input",
+     "zh": "验证码输入",
+     "slug": "pin-input",
+     "variants": [
+      {
+       "id": "pin-input",
+       "label": "",
+       "h": 260,
+       "sc": 0.6,
+       "isNew": false
+      }
+     ],
+     "desc": "一格一个字符的验证码输入，打完一格自动跳到下一格。"
+    },
+    {
+     "reka": "Radio Group",
+     "zh": "单选组",
+     "slug": "radio-group",
+     "variants": [
+      {
+       "id": "radio-group",
+       "label": "基础",
+       "h": 260,
+       "sc": 0.75,
+       "isNew": false
+      },
+      {
+       "id": "radio-cards",
+       "h": 260,
+       "sc": 0.6,
+       "isNew": true,
+       "label": "卡片"
+      }
+     ],
+     "desc": "一组里只能选一个。选中的圆点散开、绕过去、再凝回来。"
+    },
+    {
+     "reka": "Rating",
+     "zh": "评分",
+     "slug": "rating",
+     "variants": [
+      {
+       "id": "rating",
+       "label": "",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      }
+     ],
+     "desc": "点几颗就是几分，键盘左右也能打分。"
+    },
+    {
+     "reka": "Select",
+     "zh": "选择框",
+     "slug": "select",
+     "variants": [
+      {
+       "id": "select",
+       "label": "基础",
+       "h": 360,
+       "sc": 0.7,
+       "isNew": false
+      },
+      {
+       "id": "select-groups",
+       "h": 440,
+       "sc": 0.66,
+       "isNew": true,
+       "label": "分组"
+      }
+     ],
+     "desc": "点开一列选项挑一个，按钮上显示选中的那项。"
+    },
+    {
+     "reka": "Slider",
+     "zh": "滑块",
+     "slug": "slider",
+     "variants": [
+      {
+       "id": "slider",
+       "label": "单个值",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      },
+      {
+       "id": "range-slider",
+       "label": "一段范围",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      },
+      {
+       "id": "slider-steps",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": true,
+       "label": "带刻度"
+      },
+      {
+       "id": "slider-vertical",
+       "h": 330,
+       "sc": 0.7,
+       "isNew": true,
+       "label": "竖着"
+      }
+     ],
+     "desc": "拖一下，选一个值或者一段范围。"
+    },
+    {
+     "reka": "Switch",
+     "zh": "开关",
+     "slug": "switch",
+     "variants": [
+      {
+       "id": "switch",
+       "label": "基础",
+       "h": 260,
+       "sc": 0.75,
+       "isNew": false
+      },
+      {
+       "id": "switch-labeled",
+       "h": 330,
+       "sc": 0.7,
+       "isNew": true,
+       "label": "带说明"
+      }
+     ],
+     "desc": "开或关，立刻生效。"
+    },
+    {
+     "reka": "Tag Group",
+     "zh": "标签组",
+     "slug": "tag-group",
+     "variants": [
+      {
+       "id": "tag-group",
+       "label": "",
+       "h": 260,
+       "sc": 0.6,
+       "isNew": false
+      }
+     ],
+     "desc": "一组能选、能删的标签。"
+    },
+    {
+     "reka": "Tags Input",
+     "zh": "标签输入",
+     "slug": "tags-input",
+     "variants": [
+      {
+       "id": "tags-input",
+       "label": "",
+       "h": 260,
+       "sc": 0.6,
+       "isNew": false
+      }
+     ],
+     "desc": "把打进去的词变成一颗颗标签：回车加一颗，退格删一颗。"
+    }
+   ]
+  },
+  {
+   "zh": "颜色",
+   "en": "Color",
+   "items": [
+    {
+     "reka": "Color Area",
+     "zh": "色域",
+     "slug": "color-area",
+     "variants": [
+      {
+       "id": "color-area",
+       "label": "",
+       "h": 420,
+       "sc": 0.7,
+       "isNew": true
+      }
+     ],
+     "desc": "在一块色域里同时挑饱和度和亮度。"
+    },
+    {
+     "reka": "Color Field",
+     "zh": "颜色输入",
+     "slug": "color-field",
+     "variants": [
+      {
+       "id": "color-field",
+       "label": "",
+       "h": 260,
+       "sc": 0.8,
+       "isNew": true
+      }
+     ],
+     "desc": "直接输入一个颜色值，比如 #4F7CFF。"
+    },
+    {
+     "reka": "Color Slider",
+     "zh": "颜色滑块",
+     "slug": "color-slider",
+     "variants": [
+      {
+       "id": "color-slider",
+       "label": "",
+       "h": 300,
+       "sc": 0.75,
+       "isNew": true
+      }
+     ],
+     "desc": "沿着一个通道（色相、饱和度……）调颜色。"
+    },
+    {
+     "reka": "Color Swatch",
+     "zh": "色块",
+     "slug": "color-swatch",
+     "variants": [
+      {
+       "id": "color-swatch",
+       "label": "",
+       "h": 260,
+       "sc": 0.8,
+       "isNew": true
+      }
+     ],
+     "desc": "展示一种颜色，读屏会念出它的名字。"
+    },
+    {
+     "reka": "Color Swatch Picker",
+     "zh": "色块选择",
+     "slug": "color-swatch-picker",
+     "variants": [
+      {
+       "id": "color-swatch-picker",
+       "label": "",
+       "h": 300,
+       "sc": 0.7,
+       "isNew": true
+      }
+     ],
+     "desc": "从一排预设的颜色里挑一个。"
+    }
+   ]
+  },
+  {
+   "zh": "日期",
+   "en": "Dates",
+   "items": [
+    {
+     "reka": "Calendar",
+     "zh": "日历",
+     "slug": "calendar",
+     "variants": [
+      {
+       "id": "calendar",
+       "label": "",
+       "h": 470,
+       "sc": 0.48,
+       "isNew": false
+      }
+     ],
+     "desc": "一个月的日历，挑一天。"
+    },
+    {
+     "reka": "Date Field",
+     "zh": "日期输入",
+     "slug": "date-field",
+     "variants": [
+      {
+       "id": "date-field",
+       "label": "",
+       "h": 220,
+       "sc": 0.7,
+       "isNew": true
+      }
+     ],
+     "desc": "年、月、日分成几格，一格一格输入日期。"
+    },
+    {
+     "reka": "Date Picker",
+     "zh": "日期选择",
+     "slug": "date-picker",
+     "variants": [
+      {
+       "id": "date-picker",
+       "label": "",
+       "h": 520,
+       "sc": 0.7,
+       "isNew": true
+      }
+     ],
+     "desc": "日期输入加一个弹出来的日历。"
+    },
+    {
+     "reka": "Date Range Field",
+     "zh": "日期范围输入",
+     "slug": "date-range-field",
+     "variants": [
+      {
+       "id": "date-range-field",
+       "label": "",
+       "h": 220,
+       "sc": 0.5,
+       "isNew": true
+      }
+     ],
+     "desc": "输入开始和结束两个日期。"
+    },
+    {
+     "reka": "Date Range Picker",
+     "zh": "日期范围选择",
+     "slug": "date-range-picker",
+     "variants": [
+      {
+       "id": "date-range-picker",
+       "label": "",
+       "h": 520,
+       "sc": 0.62,
+       "isNew": true
+      }
+     ],
+     "desc": "范围日期输入，加一个能拉出一段的日历。"
+    },
+    {
+     "reka": "RangeCalendar",
+     "zh": "范围日历",
+     "slug": "rangecalendar",
+     "variants": [
+      {
+       "id": "range-calendar",
+       "label": "",
+       "h": 470,
+       "sc": 0.45,
+       "isNew": true
+      }
+     ],
+     "desc": "在日历上点起点、点终点，选一段日子。"
+    },
+    {
+     "reka": "Time Field",
+     "zh": "时间输入",
+     "slug": "time-field",
+     "variants": [
+      {
+       "id": "time-field",
+       "label": "",
+       "h": 220,
+       "sc": 0.75,
+       "isNew": true
+      }
+     ],
+     "desc": "时、分分成格子输入时间。"
+    },
+    {
+     "reka": "Time Range Field",
+     "zh": "时间范围输入",
+     "slug": "time-range-field",
+     "variants": [
+      {
+       "id": "time-range-field",
+       "label": "",
+       "h": 220,
+       "sc": 0.65,
+       "isNew": true
+      }
+     ],
+     "desc": "输入开始和结束两个时间。"
+    },
+    {
+     "reka": "MonthPicker",
+     "zh": "月份选择",
+     "slug": "monthpicker",
+     "variants": [
+      {
+       "id": "month-picker",
+       "label": "",
+       "h": 340,
+       "sc": 0.55,
+       "isNew": true
+      }
+     ],
+     "desc": "一年十二个月，挑一个。"
+    },
+    {
+     "reka": "MonthRangePicker",
+     "zh": "月份范围选择",
+     "slug": "monthrangepicker",
+     "variants": [
+      {
+       "id": "month-range-picker",
+       "label": "",
+       "h": 340,
+       "sc": 0.55,
+       "isNew": true
+      }
+     ],
+     "desc": "在月份里选一段。"
+    },
+    {
+     "reka": "YearPicker",
+     "zh": "年份选择",
+     "slug": "yearpicker",
+     "variants": [
+      {
+       "id": "year-picker",
+       "label": "",
+       "h": 340,
+       "sc": 0.55,
+       "isNew": true
+      }
+     ],
+     "desc": "一页十几年，挑一年。"
+    },
+    {
+     "reka": "YearRangePicker",
+     "zh": "年份范围选择",
+     "slug": "yearrangepicker",
+     "variants": [
+      {
+       "id": "year-range-picker",
+       "label": "",
+       "h": 340,
+       "sc": 0.55,
+       "isNew": true
+      }
+     ],
+     "desc": "在年份里选一段。"
+    }
+   ]
+  },
+  {
+   "zh": "通用",
+   "en": "General",
+   "items": [
+    {
+     "reka": "Accordion",
+     "zh": "手风琴",
+     "slug": "accordion",
+     "variants": [
+      {
+       "id": "accordion",
+       "label": "一次开一项",
+       "h": 340,
+       "sc": 0.6,
+       "isNew": false
+      },
+      {
+       "id": "accordion-multiple",
+       "h": 330,
+       "sc": 0.7,
+       "isNew": true,
+       "label": "可以开几项"
+      }
+     ],
+     "desc": "一组能展开、收起的段落。"
+    },
+    {
+     "reka": "Alert Dialog",
+     "zh": "警告对话框",
+     "slug": "alert-dialog",
+     "variants": [
+      {
+       "id": "dialog",
+       "label": "",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      }
+     ],
+     "desc": "重要的操作先问一句，必须回答才能继续。"
+    },
+    {
+     "reka": "Aspect Ratio",
+     "zh": "宽高比",
+     "slug": "aspect-ratio",
+     "variants": [
+      {
+       "id": "aspect-ratio",
+       "label": "",
+       "h": 300,
+       "sc": 0.55,
+       "isNew": false
+      }
+     ],
+     "desc": "让里面的内容保持固定的宽高比。"
+    },
+    {
+     "reka": "Avatar",
+     "zh": "头像",
+     "slug": "avatar",
+     "variants": [
+      {
+       "id": "avatar",
+       "label": "",
+       "h": 260,
+       "sc": 0.65,
+       "isNew": false
+      }
+     ],
+     "desc": "头像；图片没来的时候，显示名字的第一个字。"
+    },
+    {
+     "reka": "Collapsible",
+     "zh": "折叠",
+     "slug": "collapsible",
+     "variants": [
+      {
+       "id": "collapsible",
+       "label": "",
+       "h": 320,
+       "sc": 0.55,
+       "isNew": false
+      }
+     ],
+     "desc": "一块能展开、收起的内容。"
+    },
+    {
+     "reka": "Context Menu",
+     "zh": "右键菜单",
+     "slug": "context-menu",
+     "variants": [
+      {
+       "id": "context-menu",
+       "label": "",
+       "h": 380,
+       "sc": 0.48,
+       "isNew": false
+      }
+     ],
+     "desc": "右键（手机上长按）弹出来的菜单。"
+    },
+    {
+     "reka": "Dialog",
+     "zh": "对话框",
+     "slug": "dialog",
+     "variants": [
+      {
+       "id": "dialog",
+       "label": "",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      }
+     ],
+     "desc": "盖在页面上的窗口，背后的页面暂时点不到。"
+    },
+    {
+     "reka": "Drawer",
+     "zh": "抽屉",
+     "slug": "drawer",
+     "variants": [
+      {
+       "id": "drawer",
+       "label": "",
+       "h": 440,
+       "sc": 0.7,
+       "isNew": false
+      }
+     ],
+     "desc": "从屏幕边上拉出来的面板。"
+    },
+    {
+     "reka": "Dropdown Menu",
+     "zh": "下拉菜单",
+     "slug": "dropdown-menu",
+     "variants": [
+      {
+       "id": "dropdown-menu",
+       "label": "",
+       "h": 420,
+       "sc": 0.52,
+       "isNew": false
+      }
+     ],
+     "desc": "点按钮弹出来的一列操作。"
+    },
+    {
+     "reka": "Hover Card",
+     "zh": "悬浮卡片",
+     "slug": "hover-card",
+     "variants": [
+      {
+       "id": "hover-card",
+       "label": "",
+       "h": 340,
+       "sc": 0.65,
+       "isNew": false
+      }
+     ],
+     "desc": "鼠标停在链接上，先预览一下后面的内容。"
+    },
+    {
+     "reka": "Menubar",
+     "zh": "菜单栏",
+     "slug": "menubar",
+     "variants": [
+      {
+       "id": "menubar",
+       "label": "",
+       "h": 360,
+       "sc": 0.6,
+       "isNew": false
+      }
+     ],
+     "desc": "桌面软件那样的一排菜单。"
+    },
+    {
+     "reka": "Navigation Menu",
+     "zh": "导航菜单",
+     "slug": "navigation-menu",
+     "variants": [
+      {
+       "id": "navigation-menu",
+       "label": "",
+       "h": 380,
+       "sc": 0.55,
+       "isNew": false
+      }
+     ],
+     "desc": "网站顶上的导航，鼠标移过去展开子菜单。"
+    },
+    {
+     "reka": "Pagination",
+     "zh": "分页",
+     "slug": "pagination",
+     "variants": [
+      {
+       "id": "pagination",
+       "label": "几页",
+       "h": 260,
+       "sc": 0.6,
+       "isNew": false
+      },
+      {
+       "id": "pagination-ellipsis",
+       "h": 240,
+       "sc": 0.75,
+       "isNew": true,
+       "label": "页数多"
+      }
+     ],
+     "desc": "翻页：上一页、下一页，或者跳到某一页。"
+    },
+    {
+     "reka": "Popover",
+     "zh": "弹出面板",
+     "slug": "popover",
+     "variants": [
+      {
+       "id": "popover",
+       "label": "",
+       "h": 400,
+       "sc": 0.58,
+       "isNew": false
+      }
+     ],
+     "desc": "点一下弹出来的小面板，里面可以放表单。"
+    },
+    {
+     "reka": "Progress",
+     "zh": "进度条",
+     "slug": "progress",
+     "variants": [
+      {
+       "id": "progress",
+       "label": "有进度",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      },
+      {
+       "id": "progress-indeterminate",
+       "h": 260,
+       "sc": 0.75,
+       "isNew": true,
+       "label": "不确定"
+      },
+      {
+       "id": "progress-circle",
+       "h": 280,
+       "sc": 0.72,
+       "isNew": true,
+       "label": "圆的"
+      }
+     ],
+     "desc": "显示一件事做到哪儿了。"
+    },
+    {
+     "reka": "Scroll Area",
+     "zh": "滚动区域",
+     "slug": "scroll-area",
+     "variants": [
+      {
+       "id": "scroll-area",
+       "label": "",
+       "h": 300,
+       "sc": 0.5,
+       "isNew": false
+      }
+     ],
+     "desc": "自己画滚动条的滚动区域，在哪个系统上看都一样。"
+    },
+    {
+     "reka": "Separator",
+     "zh": "分隔线",
+     "slug": "separator",
+     "variants": [
+      {
+       "id": "separator",
+       "label": "",
+       "h": 260,
+       "sc": 0.7,
+       "isNew": false
+      }
+     ],
+     "desc": "在内容之间隔一条线。"
+    },
+    {
+     "reka": "Splitter",
+     "zh": "分隔条",
+     "slug": "splitter",
+     "variants": [
+      {
+       "id": "splitter",
+       "label": "",
+       "h": 300,
+       "sc": 0.5,
+       "isNew": false
+      }
+     ],
+     "desc": "拖中间那条，调两块面板的大小。"
+    },
+    {
+     "reka": "Stepper",
+     "zh": "步骤条",
+     "slug": "stepper",
+     "variants": [
+      {
+       "id": "stepper",
+       "label": "横着",
+       "h": 300,
+       "sc": 0.7,
+       "isNew": false
+      },
+      {
+       "id": "stepper-vertical",
+       "h": 360,
+       "sc": 0.66,
+       "isNew": true,
+       "label": "竖着"
+      }
+     ],
+     "desc": "一步一步走完的流程，标出走到了哪一步。"
+    },
+    {
+     "reka": "Tabs",
+     "zh": "标签页",
+     "slug": "tabs",
+     "variants": [
+      {
+       "id": "tabs",
+       "label": "横着",
+       "h": 280,
+       "sc": 0.65,
+       "isNew": false
+      },
+      {
+       "id": "tabs-vertical",
+       "h": 300,
+       "sc": 0.72,
+       "isNew": true,
+       "label": "竖着"
+      }
+     ],
+     "desc": "几块内容叠在一起，点标签换着看。"
+    },
+    {
+     "reka": "Toast",
+     "zh": "通知",
+     "slug": "toast",
+     "variants": [
+      {
+       "id": "toast",
+       "label": "一条",
+       "h": 300,
+       "sc": 0.6,
+       "isNew": false
+      },
+      {
+       "id": "toast-stack",
+       "h": 330,
+       "sc": 0.7,
+       "isNew": true,
+       "label": "叠在一起"
+      }
+     ],
+     "desc": "一条短消息，冒出来一会儿就自己走。"
+    },
+    {
+     "reka": "Tooltip",
+     "zh": "提示框",
+     "slug": "tooltip",
+     "variants": [
+      {
+       "id": "tooltip",
+       "label": "基础",
+       "h": 300,
+       "sc": 0.6,
+       "isNew": false
+      },
+      {
+       "id": "tooltip-sides",
+       "h": 380,
+       "sc": 0.6,
+       "isNew": true,
+       "label": "四个方向"
+      }
+     ],
+     "desc": "鼠标停住或者拿到焦点时，冒出一句说明。"
+    },
+    {
+     "reka": "Tree",
+     "zh": "树",
+     "slug": "tree",
+     "variants": [
+      {
+       "id": "tree",
+       "label": "基础",
+       "h": 340,
+       "sc": 0.55,
+       "isNew": false
+      },
+      {
+       "id": "tree-checkbox",
+       "h": 330,
+       "sc": 0.7,
+       "isNew": true,
+       "label": "带勾选"
+      }
+     ],
+     "desc": "能一层一层展开的树状列表。"
+    }
+   ]
+  }
+ ]
+}

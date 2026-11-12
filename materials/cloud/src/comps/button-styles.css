@@ -1,0 +1,16 @@
+.dbtns{position:relative}
+.dbtns canvas{position:absolute;left:-30px;top:-70px;width:calc(100% + 60px);height:calc(100% + 110px);pointer-events:none;filter:url(#solid)}
+.bsrow{position:relative;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:520px}
+.bs{position:relative;height:40px;padding:0 18px;border:0;border-radius:20px;background:transparent;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .15s}
+.bs[data-k="primary"],.bs[data-k="icon"],.bs[data-k="loading"],.bs[data-k="ghost"][data-on]{color:var(--body-ink)}
+.bs[data-k="outline"]{border:1px solid var(--line);background-clip:padding-box}
+.bs[data-k="outline"]:focus{outline:none}
+.bs[data-k="outline"]:focus-visible{border-color:transparent}
+.bs.ic{width:40px;padding:0}
+.bs.ic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;vertical-align:middle}
+.bs.ic[aria-pressed="true"] svg{fill:currentColor}
+.bs[data-k="loading"]{min-width:76px}
+.bs .bl{transition:opacity .15s}
+.bs[aria-busy="true"] .bl{opacity:0}
+.bs:not([data-k="outline"]):focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+

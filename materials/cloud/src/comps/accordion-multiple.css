@@ -1,0 +1,10 @@
+.dacc canvas{filter:url(#solid)}
+.dacc{position:relative;width:min(300px,100%);text-align:left}
+.dacc canvas{position:absolute;left:-20px;top:-30px;width:calc(100% + 40px);height:calc(100% + 60px);pointer-events:none}
+.aitem{position:relative;border-bottom:1px solid var(--line)}
+.ahead{margin:0}
+.atrig{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 6px 12px 22px;background:transparent;border:0;color:var(--ink);font:inherit;font-size:14.5px;font-weight:500;cursor:pointer;text-align:left}
+.chev{display:inline-block;font-size:14px;color:var(--muted)}
+.abody{overflow:hidden;height:0}
+.abody p{margin:0;padding:0 6px 14px 22px;font-size:14px;line-height:1.55;color:var(--muted)}
+

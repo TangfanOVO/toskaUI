@@ -1,0 +1,9 @@
+.dsel canvas{filter:url(#solid)}
+.dsel{position:relative;display:inline-block}
+.dsel canvas{position:absolute;left:-60px;top:-60px;width:calc(100% + 120px);height:340px;pointer-events:none;z-index:4}
+.seltrig{position:relative;width:200px;height:40px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.selval{display:inline-block;transform-origin:0 50%}
+.selval.ph{color:var(--muted)}
+.dsel .selpop{width:200px;height:168px}
+.seltrig{background-clip:padding-box}
+.seltrig:focus-visible{outline:none;border-color:transparent}

@@ -1,0 +1,13 @@
+.dtabsv{position:relative;display:grid;grid-template-columns:84px minmax(0,1fr);width:min(320px,100%);text-align:left}
+.dtabsv canvas{position:absolute;z-index:2;left:-30px;top:-30px;width:calc(100% + 60px);height:calc(100% + 60px);pointer-events:none;filter:url(#solid)}
+.tlistv{position:relative;display:flex;flex-direction:column;border-right:1px solid var(--line)}
+.tlistv button{position:relative;z-index:3;height:38px;border:0;padding:0 14px 0 4px;background:transparent;color:var(--muted);font:inherit;font-size:14.5px;text-align:left;cursor:pointer;text-shadow:0 0 2px var(--bg),0 0 5px var(--bg)}
+.tlistv button[aria-selected="true"]{color:var(--ink);font-weight:600}
+.tpv{position:relative;z-index:3;padding:6px 4px 4px 20px;font-size:14px;line-height:1.55;color:var(--muted);min-height:152px}
+.tpv[hidden]{display:none}
+.tpv b{display:block;margin-bottom:4px;color:var(--ink);font-size:15px}
+.tpv p{margin:0}
+.tpv:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px}
+
+
+/* 画布放在分隔线上面（z-index 2），标签字和面板的字再放到画布上面（z-index 3），指示线就不会被那条细线从中间划开 */

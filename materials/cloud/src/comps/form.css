@@ -1,0 +1,6 @@
+.dform canvas{filter:url(#solid)}
+.dform{position:relative;display:flex;flex-direction:column;gap:10px;width:min(280px,100%);text-align:left}
+.dform canvas{position:absolute;left:-40px;top:-40px;width:calc(100% + 80px);height:calc(100% + 80px);pointer-events:none}
+.frow{display:flex;flex-direction:column;gap:5px}
+.factions{position:relative;display:flex;align-items:center;gap:12px;height:40px}
+.fok{position:absolute;top:50%;width:92px;height:32px;margin-top:-16px;display:flex;align-items:center;justify-content:center;color:var(--card-ink);font-size:13px;font-weight:600;transform-origin:50% 50%}

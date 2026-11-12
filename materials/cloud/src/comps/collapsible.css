@@ -1,0 +1,7 @@
+.dcoll canvas{filter:url(#solid)}
+.dcoll{position:relative;width:min(280px,100%);text-align:left;padding-left:16px}
+.dcoll canvas{position:absolute;left:-20px;top:-30px;width:calc(100% + 40px);height:calc(100% + 60px);pointer-events:none}
+.chead{position:relative;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:14px;font-weight:600}
+.cbtn{position:relative;width:30px;height:30px;border:1px solid var(--line);border-radius:50%;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.cbody{overflow:hidden;height:0}
+.crepo{position:relative;padding:8px 12px;margin-bottom:6px;border:1px solid var(--line);border-radius:9px;background:var(--bg);font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:13px}

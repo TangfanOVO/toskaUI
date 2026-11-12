@@ -1,0 +1,6 @@
+.dlbxw canvas{filter:url(#solid)}
+.dlbxw{position:relative;display:inline-block}
+.dlbx{position:relative;width:200px;margin:0;padding:4px;list-style:none;border:1px solid var(--line);border-radius:12px;text-align:left;outline:none}
+.dlbx:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.dlbxw canvas{position:absolute;left:-30px;top:-40px;width:calc(100% + 60px);height:calc(100% + 70px);pointer-events:none}
+.dlbx li{position:relative;height:32px;display:flex;align-items:center;padding:0 12px;border-radius:8px;color:#fff;mix-blend-mode:difference;font-size:14px;cursor:pointer;user-select:none}

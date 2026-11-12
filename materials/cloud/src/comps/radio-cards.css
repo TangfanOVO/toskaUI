@@ -1,0 +1,10 @@
+.rcards{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:min(440px,100%)}
+.rcards canvas{position:absolute;left:-30px;top:-50px;width:calc(100% + 60px);height:calc(100% + 80px);pointer-events:none;filter:url(#solid)}
+.rcard{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:112px;padding:14px 14px 12px;border:1px solid var(--line);border-radius:14px;background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.rcard b{font-size:15px}
+.rcard span{font-size:12.5px;line-height:1.45;color:var(--muted)}
+.rcard em{margin-top:auto;font-style:normal;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.rcard:focus{outline:none}
+.rcard:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+@media (max-width:460px){ .rcards{grid-template-columns:minmax(0,1fr)} .rcard{min-height:0} }
+

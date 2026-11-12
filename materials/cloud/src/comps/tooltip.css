@@ -1,0 +1,6 @@
+.tipwrap canvas{filter:url(#solid)}
+.tipwrap{position:relative;display:inline-block;margin-top:40px}
+.tipwrap canvas{position:absolute;left:50%;top:50%;width:260px;height:200px;margin-left:-130px;margin-top:-150px;pointer-events:none;z-index:4}
+.round{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:20px;line-height:1;cursor:pointer}
+.tip-pop{position:absolute;left:50%;bottom:calc(100% + 12px);width:128px;height:34px;margin-left:-64px;z-index:5;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--card-ink);pointer-events:none}
+.tip-pop[hidden]{display:none}

@@ -1,0 +1,7 @@
+.dpg canvas{filter:url(#solid)}
+.dpg button:focus-visible{outline-color:#fff}
+/* 分页 */
+.dpg{position:relative;display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:center}
+.dpg canvas{position:absolute;left:-30px;top:-60px;width:calc(100% + 60px);height:calc(100% + 90px);pointer-events:none}
+.dpg button{position:relative;min-width:32px;height:32px;padding:0;border:0;border-radius:9px;background:transparent;color:#fff;mix-blend-mode:difference;font:inherit;font-size:14px;font-variant-numeric:tabular-nums;cursor:pointer}
+.dpg button:disabled{opacity:.35;cursor:default}

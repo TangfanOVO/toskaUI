@@ -1,0 +1,9 @@
+.dcombo canvas{filter:url(#solid)}
+.dcombo{position:relative;display:inline-block;text-align:left}
+.dcombo canvas{position:absolute;left:-60px;top:-60px;width:calc(100% + 120px);height:400px;pointer-events:none;z-index:4}
+.cbfield{position:relative;display:flex;width:220px}
+.cbfield .lin{width:100%}
+.acfield .lin{background:transparent}
+.acghost{position:absolute;inset:0;display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:pre;pointer-events:none;overflow:hidden;border:1px solid transparent}
+.acghost span:first-child{color:transparent}
+.acghost span:last-child{color:var(--muted);opacity:.75}

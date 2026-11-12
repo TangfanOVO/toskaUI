@@ -1,0 +1,4 @@
+.dfx canvas{filter:url(#solid)}
+.dfx{position:relative;display:inline-block;max-width:100%}
+.dfx canvas{position:absolute;left:-40px;top:-60px;width:calc(100% + 80px);height:calc(100% + 100px);pointer-events:none}
+#drfBox,#trfBox{flex-wrap:wrap;height:auto;min-height:40px}

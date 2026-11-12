@@ -1,0 +1,5 @@
+/* 弹出来的东西永远压在后面的组件上面（后面组件里的字有的带了层级） */
+.selpop,.dppop,.mbmenu,.nvpanel,.hovcard,.ddmenu,.ctxmenu,.panel,.tip-pop{z-index:20}
+.dsel canvas,.dcombo canvas,.dpick canvas,.dmbar canvas,.dnav canvas,.hovfx,.ddfx,.ctxfx,.popfx,.tipwrap canvas{z-index:19}
+/* 这些组件的画布被抬高了，它们自己的字和按钮要再高一层，不然会被实心块盖住 */
+.mbar button,.nvtrig,.seltrig,.dcombo .cbfield .lin,.dcombo .cbtog,.acghost,.hovlink,.dpick .dseg2 [role=spinbutton],.dpick .dseg2 .sl,.dpick .dseg2 .dash,.dpbtn{z-index:21}

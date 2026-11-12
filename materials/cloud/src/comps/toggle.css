@@ -1,0 +1,6 @@
+.dtoggle canvas{filter:url(#solid)}
+.dtoggle{position:relative;display:inline-block;padding:3px;border:1px solid var(--line);border-radius:12px}
+.dtoggle canvas{position:absolute;left:-40px;top:-60px;width:calc(100% + 80px);height:calc(100% + 100px);pointer-events:none}
+.tgl{position:relative;height:36px;padding:0 14px;display:inline-flex;align-items:center;gap:6px;border:0;border-radius:9px;background:transparent;color:#fff;mix-blend-mode:difference;font:inherit;font-size:14px;cursor:pointer}
+.tgl[aria-pressed="true"] path{fill:currentColor}
+.tgl:focus-visible{outline-color:#fff}

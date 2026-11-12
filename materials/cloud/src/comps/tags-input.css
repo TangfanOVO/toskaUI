@@ -1,0 +1,9 @@
+.dtags canvas{filter:url(#solid)}
+/* 标签输入 */
+.dtags{position:relative;display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:min(290px,100%);min-height:46px;padding:7px;border:1px solid var(--line);border-radius:12px;text-align:left}
+.dtags:focus-within{outline:none;border-color:transparent}
+.dtags canvas{position:absolute;left:-40px;top:-60px;width:calc(100% + 80px);height:calc(100% + 100px);pointer-events:none}
+.chip{position:relative;display:inline-flex;align-items:center;gap:2px;height:28px;padding:0 4px 0 11px;color:var(--body-ink);font-size:13.5px;border-radius:999px}
+.chip button{width:20px;height:20px;border:0;padding:0;background:transparent;color:inherit;cursor:pointer;border-radius:50%;font-size:15px;line-height:1}
+.chip button:focus-visible{outline:2px solid var(--body-ink);outline-offset:0}
+.dtags input{position:relative;flex:1;min-width:90px;height:28px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;outline:none}

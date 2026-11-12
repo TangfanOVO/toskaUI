@@ -1,0 +1,10 @@
+.sscol{flex-direction:column;gap:6px}
+.dsslider{position:relative;width:240px;height:24px;cursor:pointer;touch-action:none;border-radius:12px}
+.dsslider::before{content:"";position:absolute;left:0;right:0;top:10px;height:4px;border-radius:2px;background:var(--track)}
+.dsslider canvas{position:absolute;left:-30px;top:-50px;width:300px;height:104px;pointer-events:none;filter:url(#solid)}
+.dsslider:focus{outline:none}
+.dsslider:focus-visible::after{content:"";position:absolute;inset:-6px;border-radius:14px;border:2px solid var(--ink)}
+.sslabels{position:relative;width:260px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.sslabels span{width:40px;text-align:center}
+.sspreview{margin:10px 0 0;min-height:34px;color:var(--ink);transition:font-size .25s}
+

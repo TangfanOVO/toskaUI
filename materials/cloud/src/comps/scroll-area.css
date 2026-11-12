@@ -1,0 +1,10 @@
+.dscroll canvas{filter:url(#solid)}
+.dscroll{position:relative;width:min(220px,100%);height:220px;border:1px solid var(--line);border-radius:12px;text-align:left}
+.sview{height:100%;overflow:auto;scrollbar-width:none;overscroll-behavior:contain;padding:12px 22px 12px 14px;border-radius:12px}
+.sview::-webkit-scrollbar{display:none}
+.sview:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sview h4{margin:0 0 8px;font-size:13.5px}
+.slist{margin:0;padding:0;list-style:none}
+.slist li{padding:7px 0;border-top:1px solid var(--line);font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12.5px;font-variant-numeric:tabular-nums}
+.dscroll canvas{position:absolute;right:-20px;top:-20px;width:44px;height:calc(100% + 40px);pointer-events:none}
+.strack{position:absolute;right:1px;top:4px;bottom:4px;width:14px;cursor:pointer;touch-action:none}

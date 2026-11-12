@@ -1,0 +1,46 @@
+  <section class="controls">
+    <h2>手感（所有组件共用）</h2>
+    <div class="presets" id="presets">
+      <button type="button" data-p="base" aria-pressed="true">默认</button>
+      <button type="button" data-p="crisp" aria-pressed="false">利落</button>
+      <button type="button" data-p="jelly" aria-pressed="false">果冻</button>
+      <button type="button" data-p="smoky" aria-pressed="false">烟重</button>
+    </div>
+    <div class="row">
+      <label for="speed">速度<output id="o-speed">50</output></label>
+      <input id="speed" type="range" min="0" max="100" value="50">
+      <small>越高，跟得越快、停得越干脆</small>
+    </div>
+    <div class="row">
+      <label for="bounce">弹性<output id="o-bounce">50</output></label>
+      <input id="bounce" type="range" min="0" max="100" value="50">
+      <small>越高，到位时越会冲过头、晃得越久</small>
+    </div>
+    <div class="row">
+      <label for="deform">扭曲<output id="o-deform">55</output></label>
+      <input id="deform" type="range" min="0" max="100" value="55">
+      <small>越高，轮廓凹得、鼓得、拉得越明显</small>
+    </div>
+    <div class="row">
+      <label for="smoke">烟雾<output id="o-smoke">60</output></label>
+      <input id="smoke" type="range" min="0" max="100" value="60">
+      <small>越高，冒出去的烟越多越浓；组件里面化开的雾越大越散，条上的水珠鼓得越大</small>
+    </div>
+  </section>
+
+  <ul class="notes">
+    <li>灵感来自 <a href="https://goop.timmcmasters.work" target="_blank" rel="noopener" style="color:inherit">goopUI</a>（Tim McMasters）：组件上叠一层有物理的材料、划过会溅、面板 q 弹展开，这些思路是跟他学的。这里的物理和画法代码是我们自己写的，材料换成了云。组件的结构、尺寸和示例文字参考 <a href="https://reka-ui.com" target="_blank" rel="noopener" style="color:inherit">Reka UI</a>。</li>
+    <li>v14：手风琴展开时那根线不再闪（画布变高会被清空，现在改完尺寸当场补画）；加了"灰底白云"配色，页面最上面一键换；手机上长按不会再选中文字。</li>
+    <li>v13 加了范围滑块、验证码输入、日历、右键菜单、标签页、分隔条。烟碰到画布边以前会先缩没，不会被切成直线；"烟雾"也管组件里面：化开的雾团大小、散开的范围、条上水珠能鼓多大；横条上的水珠跟着速度变大、拉长，快了身后再拖一颗小的；条和水珠之间带了一圈软边，靠近时像水一样连起来。</li>
+    <li>v12 加了切换组、数字输入、标签输入、下拉菜单、对话框（另有一个收着弹的警告版）、手风琴、分页、步骤条。单选组不再追鼠标、不被划过搅动；通知改成原地 q 弹着鼓出来；滑块已选那段上多了几颗跟着晃的小水珠。</li>
+    <li>v11 加了复选框、单选组、滑块、提示框、通知、进度条，规则一样：平时凝实，变化的那一刻散成云，动起来往身后喷，停着才往上冒。</li>
+    <li>字的对比：分段选择的字会自动反色；其他会被烟飘过的字描了一圈底色。</li>
+    <li>v9 只改了画法：每一团烟都过一道"阈值"，透明度过半的部分变成硬边实心，其余消失。所以烟和组件是同一种材料，贴着组件时会连在一起，散的时候是缩没的。</li>
+    <li>烟和组件同色：一团一团的软烟，飘出去会胀大、打着旋往上走、慢慢淡掉；按钮"噗"的那一下里还夹着一点很淡的细孢子。</li>
+    <li>轮廓是一圈连在一起的小弹簧：哪儿被推一下，波纹会沿着边传开，然后慢慢平回去。按下、开关跑得快、面板刚打开时，边缘会短暂晕开。</li>
+    <li>会移动的东西像排气管：开关圆头和分段选择的雾，往身后横着喷出一道尾痕再散开；只有停着不动时冒的小云才往上飘。</li>
+    <li>分段选择的选中块和开关圆头，本身就是一团凝实的雾：换位置时散开、飘过去、再凝回来。</li>
+    <li>学 goop 的"划过溅水"：鼠标快速穿过按钮或面板，进去那侧压凹、出去那侧鼓出来，烟顺着手被带出去；划过雾做的东西，雾会被搅走一截再弹回来。</li>
+    <li>弹出面板：q 弹地放大再回弹，一圈雾跟着涨开；开着时顶上偶尔冒一缕；关掉时整块化成烟。点外面或按 Esc 关闭。</li>
+    <li>系统开了「减弱动态效果」时，烟、扭曲和回弹都会关掉，组件照常能用。</li>
+  </ul>

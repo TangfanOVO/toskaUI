@@ -1,0 +1,11 @@
+.tcol{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+.tsarea{position:relative;width:100%;max-width:300px;height:110px}
+.tsarea canvas{position:absolute;left:-40px;top:-60px;width:calc(100% + 80px);height:calc(100% + 190px);pointer-events:none;filter:url(#solid)}
+.tsitem{position:absolute;left:0;top:0;width:260px;height:60px;display:flex;align-items:center;gap:10px;padding:0 10px 0 16px;color:var(--card-ink);text-align:left;transform-origin:50% 50%;will-change:transform,opacity}
+.tsitem .tt{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.35}
+.tsitem strong{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tsitem span{font-size:12.5px;color:var(--card-muted)}
+.tsx{flex:none;width:28px;height:28px;border:0;border-radius:8px;background:transparent;color:var(--card-muted);font:inherit;font-size:16px;line-height:1;cursor:pointer}
+.tsx:hover{color:var(--card-ink)}
+.tsx:focus-visible{outline:2px solid var(--card-ink);outline-offset:1px}
+

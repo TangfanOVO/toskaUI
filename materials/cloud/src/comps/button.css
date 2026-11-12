@@ -1,0 +1,6 @@
+/* 按钮：DOM 只管字和点击，身体和烟画在后面的画布上；画布上方留高一点给烟往上飘 */
+.bwrap{position:relative;display:inline-block}
+.bwrap canvas{position:absolute;left:-170px;top:-130px;width:calc(100% + 340px);height:calc(100% + 220px);pointer-events:none}
+.bwrap canvas{filter:url(#solid)}
+.dbtn{position:relative;width:140px;height:44px;border:0;padding:0;background:transparent;border-radius:999px;
+  font:inherit;font-size:15px;font-weight:600;color:var(--body-ink);cursor:pointer;touch-action:none;will-change:transform;-webkit-tap-highlight-color:transparent}

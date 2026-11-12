@@ -1,0 +1,3 @@
+.drcal canvas{filter:url(#solid)}
+.drcal{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px}
+.drcal canvas{position:absolute;left:-30px;top:-44px;width:calc(100% + 60px);height:calc(100% + 70px);pointer-events:none}
